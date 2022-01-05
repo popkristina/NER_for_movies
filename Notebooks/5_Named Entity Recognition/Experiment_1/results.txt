@@ -1,0 +1,300 @@
+1. Detecting only genres: 
+
+Epoch:   0%|          | 0/10 [00:00<?, ?it/s]
+
+Average train loss: 0.1397460420188066
+
+Epoch:  10%|█         | 1/10 [00:12<01:48, 12.08s/it]
+
+Validation loss: 0.034385739266872405
+Validation Accuracy: 0.9902822151224707
+
+Average train loss: 0.02209695818129222
+
+Epoch:  20%|██        | 2/10 [00:23<01:32, 11.56s/it]
+
+Validation loss: 0.0177651685080491
+Validation Accuracy: 0.9954739084132055
+
+Average train loss: 0.008680950810918835
+
+Epoch:  30%|███       | 3/10 [00:34<01:19, 11.41s/it]
+
+Validation loss: 0.013328803156036883
+Validation Accuracy: 0.9968051118210862
+
+Average train loss: 0.004617717324730915
+
+Epoch:  40%|████      | 4/10 [00:45<01:08, 11.39s/it]
+
+Validation loss: 0.011872955146827735
+Validation Accuracy: 0.9972710330138446
+
+Average train loss: 0.0033471450725620663
+
+Epoch:  50%|█████     | 5/10 [00:57<00:56, 11.34s/it]
+
+Validation loss: 0.011086686057387852
+Validation Accuracy: 0.9974707135250266
+
+Average train loss: 0.002508675359422341
+
+Epoch:  60%|██████    | 6/10 [01:08<00:45, 11.31s/it]
+
+Validation loss: 0.011000508927099872
+Validation Accuracy: 0.9976038338658147
+
+Average train loss: 0.001988829781751249
+
+Epoch:  70%|███████   | 7/10 [01:19<00:33, 11.31s/it]
+
+Validation loss: 0.011078131146496162
+Validation Accuracy: 0.9974041533546326
+
+Average train loss: 0.001503401166504576
+
+Epoch:  80%|████████  | 8/10 [01:30<00:22, 11.27s/it]
+
+Validation loss: 0.010656425538036274
+Validation Accuracy: 0.9974041533546326
+
+Average train loss: 0.0012992185177092717
+
+Epoch:  90%|█████████ | 9/10 [01:42<00:11, 11.26s/it]
+
+Validation loss: 0.010990673313790467
+Validation Accuracy: 0.9975372736954207
+
+Average train loss: 0.0010744211739055008
+
+Epoch: 100%|██████████| 10/10 [01:53<00:00, 11.34s/it]
+
+Validation loss: 0.011098447717085947
+Validation Accuracy: 0.9975372736954207
+
+
+2. Detecting only actors:
+
+Epoch:   0%|          | 0/10 [00:00<?, ?it/s]
+
+Average train loss: 0.10127505331577079
+
+Epoch:  10%|█         | 1/10 [00:11<01:42, 11.36s/it]
+
+Validation loss: 0.046298459311947225
+Validation Accuracy: 0.9934771033013845
+
+Average train loss: 0.03313045243329897
+
+Epoch:  20%|██        | 2/10 [00:22<01:30, 11.30s/it]
+
+Validation loss: 0.01847116904973518
+Validation Accuracy: 0.9934771033013845
+
+Average train loss: 0.015771513754451596
+
+Epoch:  30%|███       | 3/10 [00:33<01:18, 11.28s/it]
+
+Validation loss: 0.015168483258457854
+Validation Accuracy: 0.9940095846645367
+
+Average train loss: 0.010973700278948338
+
+Epoch:  40%|████      | 4/10 [00:45<01:07, 11.29s/it]
+
+Validation loss: 0.013482393155572935
+Validation Accuracy: 0.9956735889243876
+
+Average train loss: 0.006937975912257349
+
+Epoch:  50%|█████     | 5/10 [00:56<00:56, 11.28s/it]
+
+Validation loss: 0.014608494110871107
+Validation Accuracy: 0.9957401490947817
+
+Average train loss: 0.005407037646069216
+
+Epoch:  60%|██████    | 6/10 [01:07<00:45, 11.26s/it]
+
+Validation loss: 0.014577098934387323
+Validation Accuracy: 0.9967385516506923
+
+Average train loss: 0.003927674560022629
+
+Epoch:  70%|███████   | 7/10 [01:18<00:33, 11.28s/it]
+
+Validation loss: 0.01575063141208375
+Validation Accuracy: 0.9964057507987221
+
+Average train loss: 0.0031675181378739434
+
+Epoch:  80%|████████  | 8/10 [01:30<00:22, 11.28s/it]
+
+Validation loss: 0.014201338982820744
+Validation Accuracy: 0.9970047923322684
+
+Average train loss: 0.0025183796606143005
+
+Epoch:  90%|█████████ | 9/10 [01:41<00:11, 11.27s/it]
+
+Validation loss: 0.013966186120524072
+Validation Accuracy: 0.9970047923322684
+
+Average train loss: 0.0021387494424424084
+
+Epoch: 100%|██████████| 10/10 [01:52<00:00, 11.29s/it]
+
+Validation loss: 0.013831638077681419
+Validation Accuracy: 0.9970713525026624
+
+
+3. Detecting only movies: 
+
+Epoch:   0%|          | 0/10 [00:00<?, ?it/s]
+
+Average train loss: 0.3865551376664961
+
+Epoch:  10%|█         | 1/10 [00:11<01:43, 11.50s/it]
+
+Validation loss: 0.2135843053460121
+Validation Accuracy: 0.9189962726304579
+
+Average train loss: 0.14027525363741694
+
+Epoch:  20%|██        | 2/10 [00:22<01:31, 11.45s/it]
+
+Validation loss: 0.14907247126102446
+Validation Accuracy: 0.9499467518636848
+
+Average train loss: 0.08091475703829043
+
+Epoch:  30%|███       | 3/10 [00:34<01:19, 11.42s/it]
+
+Validation loss: 0.1333318829536438
+Validation Accuracy: 0.9621938232161874
+
+Average train loss: 0.05264893576905534
+
+Epoch:  40%|████      | 4/10 [00:45<01:08, 11.39s/it]
+
+Validation loss: 0.13344470970332623
+Validation Accuracy: 0.9625266240681576
+
+Average train loss: 0.038239807645614084
+
+Epoch:  50%|█████     | 5/10 [00:56<00:56, 11.34s/it]
+
+Validation loss: 0.1350350257009268
+Validation Accuracy: 0.9655218317358892
+
+Average train loss: 0.028058643553506683
+
+Epoch:  60%|██████    | 6/10 [01:08<00:45, 11.33s/it]
+
+Validation loss: 0.14665669687092303
+Validation Accuracy: 0.9659211927582535
+
+Average train loss: 0.023661702242050622
+
+Epoch:  70%|███████   | 7/10 [01:19<00:34, 11.35s/it]
+
+Validation loss: 0.14248756133019924
+Validation Accuracy: 0.9665202342917998
+
+Average train loss: 0.02027592225302313
+
+Epoch:  80%|████████  | 8/10 [01:30<00:22, 11.32s/it]
+
+Validation loss: 0.14533409774303435
+Validation Accuracy: 0.9676517571884984
+
+Average train loss: 0.01746754313038813
+
+Epoch:  90%|█████████ | 9/10 [01:42<00:11, 11.30s/it]
+
+Validation loss: 0.1452221717685461
+Validation Accuracy: 0.9677183173588925
+
+Average train loss: 0.0159220552273296
+
+Epoch: 100%|██████████| 10/10 [01:53<00:00, 11.34s/it]
+
+Validation loss: 0.1474613133817911
+Validation Accuracy: 0.9677183173588925
+
+
+4. Detecting all:
+
+Epoch:   0%|          | 0/10 [00:00<?, ?it/s]
+
+Average train loss: 0.49678659962641225
+
+Epoch:  10%|█         | 1/10 [00:11<01:43, 11.50s/it]
+
+Validation loss: 0.2874945685267448
+Validation Accuracy: 0.9110756123535676
+
+Average train loss: 0.18550049896175796
+
+Epoch:  20%|██        | 2/10 [00:22<01:31, 11.43s/it]
+
+Validation loss: 0.19121211245656014
+Validation Accuracy: 0.9423588924387647
+
+Average train loss: 0.10610441158752183
+
+Epoch:  30%|███       | 3/10 [00:34<01:19, 11.41s/it]
+
+Validation loss: 0.1567011646926403
+Validation Accuracy: 0.9535410010649628
+
+Average train loss: 0.07103119720075582
+
+Epoch:  40%|████      | 4/10 [00:45<01:08, 11.42s/it]
+
+Validation loss: 0.16063225790858268
+Validation Accuracy: 0.9553381256656017
+
+Average train loss: 0.0503669812067135
+
+Epoch:  50%|█████     | 5/10 [00:57<00:56, 11.39s/it]
+
+Validation loss: 0.16902634017169477
+Validation Accuracy: 0.9586661341853036
+
+Average train loss: 0.03816488063013231
+
+Epoch:  60%|██████    | 6/10 [01:08<00:45, 11.35s/it]
+
+Validation loss: 0.17085581943392752
+Validation Accuracy: 0.9599307774227902
+
+Average train loss: 0.03137823284880535
+
+Epoch:  70%|███████   | 7/10 [01:19<00:34, 11.35s/it]
+
+Validation loss: 0.1633940778672695
+Validation Accuracy: 0.9597976570820022
+
+Average train loss: 0.027339650469051825
+
+Epoch:  80%|████████  | 8/10 [01:30<00:22, 11.34s/it]
+
+Validation loss: 0.16781641244888307
+Validation Accuracy: 0.9602635782747604
+
+Average train loss: 0.02412376691260048
+
+Epoch:  90%|█████████ | 9/10 [01:42<00:11, 11.33s/it]
+
+Validation loss: 0.17226572483778
+Validation Accuracy: 0.9608626198083067
+
+Average train loss: 0.022100678619903488
+
+Epoch: 100%|██████████| 10/10 [01:53<00:00, 11.36s/it]
+
+Validation loss: 0.17226556763052941
+Validation Accuracy: 0.9609957401490948
+
+
