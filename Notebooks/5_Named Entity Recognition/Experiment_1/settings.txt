@@ -1,9 +1,0 @@
-bert_base_cased
-
-max sequence length: 75
-
-batch size: 32
-
-fine tuned on: Reddit dataset
-
-epochs: 10
