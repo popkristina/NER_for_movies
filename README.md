@@ -18,15 +18,12 @@
 
 3. Google BERT: https://github.com/google-research/bert
 
-4. MIT Movie Corpus: https://groups.csail.mit.edu/sls/downloads/movie/
-
 6. End-to-end information extraction: https://github.com/rasmusbergpalm/e2e-ie-release
 
 7. BERT Google repo: https://github.com/google-research/bert/blob/master/multilingual.md
 
 11. Hugging Face BERT pre-trained models: https://huggingface.co/models?filter=tf
 
-13. biLSTM + ELMO amazing code: https://github.com/SubhamIO/Named-Entity-Recognition-using-ELMo-BiLSTM/blob/main/Named_Entity_Recognition_ELMo.ipynb
 
 ### BERT & Transformers
 
