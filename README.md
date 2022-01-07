@@ -4,8 +4,6 @@
 
 ### NER
 
-1. Training BERT for NER: (!!!) https://www.depends-on-the-definition.com/named-entity-recognition-with-bert/
-
 2. Fine Tuning BERT for NER: https://medium.com/analytics-vidhya/fine-tuning-bert-for-ner-on-conll-2003-dataset-with-tf-2-2-0-2f242ca2ce06
 
 4. NER with Spacy: https://stackabuse.com/python-for-nlp-parts-of-speech-tagging-and-named-entity-recognition/
