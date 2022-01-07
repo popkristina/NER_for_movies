@@ -4,10 +4,6 @@
 
 ### NER
 
-2. Fine Tuning BERT for NER: https://medium.com/analytics-vidhya/fine-tuning-bert-for-ner-on-conll-2003-dataset-with-tf-2-2-0-2f242ca2ce06
-
-4. NER with Spacy: https://stackabuse.com/python-for-nlp-parts-of-speech-tagging-and-named-entity-recognition/
-
 10. Entity-level sentiment analysis: https://aylien.com/blog/using-entity-level-sentiment-analysis-to-understand-news-content
 
 ### Datasets and Repos
