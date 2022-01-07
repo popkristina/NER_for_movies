@@ -1,11 +1,6 @@
 
 ## Links
 
-
-### NER
-
-10. Entity-level sentiment analysis: https://aylien.com/blog/using-entity-level-sentiment-analysis-to-understand-news-content
-
 ### Datasets and Repos
 
 1. NLP Recipes: https://github.com/microsoft/nlp-recipes
