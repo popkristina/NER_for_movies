@@ -3,8 +3,6 @@
 
 ### Datasets and Repos
 
-1. NLP Recipes: https://github.com/microsoft/nlp-recipes
-
 3. Google BERT: https://github.com/google-research/bert
 
 7. BERT Google repo: https://github.com/google-research/bert/blob/master/multilingual.md
