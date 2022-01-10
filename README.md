@@ -7,8 +7,6 @@
 
 3. Google BERT: https://github.com/google-research/bert
 
-6. End-to-end information extraction: https://github.com/rasmusbergpalm/e2e-ie-release
-
 7. BERT Google repo: https://github.com/google-research/bert/blob/master/multilingual.md
 
 11. Hugging Face BERT pre-trained models: https://huggingface.co/models?filter=tf
