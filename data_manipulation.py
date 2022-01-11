@@ -161,3 +161,22 @@ def split_based_on_id(data):
     test.columns = data.columns
 
     return train, test
+
+
+def fix_vertical_line(df, column):
+    """
+    Accepts a dataframe of submissions and a column of
+    extracted entities separated with '|'.
+    Checks if every entry has a '|' in the beginning or
+    the end due to previous merge of columns.
+    """
+    col = []
+    for line in df[column]:
+        if len(line) == 1:
+            line = ""
+        if line.startswith('|'):
+            line = line[1:]
+        if line.endswith('|'):
+            line = line[:-1]
+        col.append(line)
+    return col
