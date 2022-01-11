@@ -5,15 +5,11 @@ import tensorflow.compat.v1 as tf
 
 def baseline_model(max_len, n_words, n_tags):
     """
-    :param max_len: Max. submission length
-    :param n_words: Number of words in the vocabulary
-    :param n_tags: Number of classes
-    :return: Keras model
-
     The model is built with a set of tokenized sentences
     of length 'max_len'.
     The Embedding layer creates features out of the tokens.
     """
+
     input = Input(shape=(max_len,))
 
     model = Embedding(input_dim=n_words, output_dim=max_len, input_length=max_len)(input)
@@ -25,6 +21,10 @@ def baseline_model(max_len, n_words, n_tags):
 
 
 def baseline_additional_features(max_len, n_words, n_tags, num_feats):
+    """
+
+    
+    """
     input_tokens = Input(shape=(max_len,))
     emb = Embedding(input_dim=n_words, output_dim=300, input_length=max_len)(input_tokens)
 
@@ -33,7 +33,7 @@ def baseline_additional_features(max_len, n_words, n_tags, num_feats):
 
     model = Concatenate()([emb, fts])
     model = SpatialDropout1D(0.1)(model)
-    model = Bidirectional(LSTM(units=200, return_sequences=True, recurrent_dropout=0.2))(model)  # variational biLSTM
+    model = Bidirectional(LSTM(units=200, return_sequences=True, recurrent_dropout=0.2))(model)
 
     out = TimeDistributed(Dense(n_tags, activation="softmax"))(model)
     return Model([input_tokens, input_feats], out)
