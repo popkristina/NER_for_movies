@@ -35,8 +35,6 @@
 
 5. ELMO: https://allennlp.org/elmo
 
-6. Spacy Linguistic Features: https://spacy.io/usage/linguistic-features
-
 
 ### Other resources:
 
