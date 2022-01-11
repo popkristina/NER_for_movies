@@ -15,10 +15,10 @@ from tensorflow.compat.v1.keras import backend as K
 from keras.models import Model, Input
 from keras.layers import Concatenate, LSTM, TimeDistributed, Dense, BatchNormalization, Bidirectional, Lambda
 
-from preprocess import *
-from feature_extraction import *
-from plotting_functions import *
-from data_manipulation import *
+from Scripts.preprocess import *
+from Scripts.feature_extraction import *
+from Scripts.plotting_functions import *
+from Scripts.data_manipulation import *
 
 
 def ElmoEmbedding(x):

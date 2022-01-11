@@ -29,8 +29,9 @@ def replace(text):
 
 def tokenizer(submissions):
     """
-    Accepts a list of strings and for each one returns its tokens, corresponding pos tags and chunk tags.
-    Returns a dataframe with the tokens, their tags and the submission indicators.
+    Accepts a list of strings and for each one returns its tokens,
+    corresponding pos tags and chunk tags. Returns a dataframe
+    with the tokens, their tags and the submission indicators.
     """
     sentences_tokenized = []
     splitted_words_all = []
