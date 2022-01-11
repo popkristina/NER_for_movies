@@ -137,7 +137,27 @@ def read_preprocessed_data(path):
 
 def similarity(string1, string2):
     """
-    Returns similarity ratio between two strings. Used in case movie written names differ by a little.
+    Returns similarity ratio between two strings.
+    Used in case movie written names differ by a little.
     """
     return SequenceMatcher(None, string1, string2).ratio()
 
+
+def split_based_on_id(data):
+    """
+    Splits a dataset of submissions to train and test sets
+    based on a previously defined set of submission ids that
+    should be kept for testing.
+    Returns a train and test Pandas dataframes.
+    """
+    train = pd.DataFrame()
+    test = pd.DataFrame()
+    for index, row in data.iterrows():
+        if row['id'] in test_set_ids_list:
+            test = test.append([row])
+        else:
+            train = train.append([row])
+    train.columns = data.columns
+    test.columns = data.columns
+
+    return train, test
