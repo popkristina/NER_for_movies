@@ -51,6 +51,10 @@ class SentenceGetter(object):
 
 
 def pad_textual_data(sentences, max_len):
+    """
+    Accepts a list of tokenized sentences and
+    pads each sentence to 'max_len' length.
+    """
     x = list()
     for sentence in sentences:
         padded_sentence = []
@@ -180,3 +184,4 @@ def fix_vertical_line(df, column):
             line = line[:-1]
         col.append(line)
     return col
+
