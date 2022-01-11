@@ -37,8 +37,6 @@
 
 6. Spacy Linguistic Features: https://spacy.io/usage/linguistic-features
 
-7. Spacy Token Features: https://spacy.io/api/token
-
 
 ### Other resources:
 
