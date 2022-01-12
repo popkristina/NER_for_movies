@@ -18,8 +18,6 @@
 
 4. The Annotated Transformer Harvard Dataverse implementation and tutorial: http://nlp.seas.harvard.edu/2018/04/03/attention.html
 
-5. BERT Machine Learning Tutorial freecodecamp: https://www.freecodecamp.org/news/google-bert-nlp-machine-learning-tutorial/
-
 7. BERT fine tuning google colab: https://colab.research.google.com/drive/1ywsvwO6thOVOrfagjjfuxEf6xVRxbUNO
 
  
