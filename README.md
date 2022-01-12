@@ -22,10 +22,6 @@
 
 7. BERT fine tuning google colab: https://colab.research.google.com/drive/1ywsvwO6thOVOrfagjjfuxEf6xVRxbUNO
 
-### RNN
-
-1. Understanding LSTMs: http://colah.github.io/posts/2015-08-Understanding-LSTMs/
-
  
 ### Documentations
 

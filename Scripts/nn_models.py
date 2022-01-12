@@ -23,7 +23,7 @@ def baseline_model(max_len, n_words, n_tags):
 def baseline_additional_features(max_len, n_words, n_tags, num_feats):
     """
 
-    
+
     """
     input_tokens = Input(shape=(max_len,))
     emb = Embedding(input_dim=n_words, output_dim=300, input_length=max_len)(input_tokens)
