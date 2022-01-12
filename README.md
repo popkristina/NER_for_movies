@@ -25,8 +25,6 @@
 
 2. Transformers: https://huggingface.co/transformers/v2.2.0/examples.html
 
-3. Textstat Python package: https://pypi.org/project/textstat/
-
 5. ELMO: https://allennlp.org/elmo
 
 
