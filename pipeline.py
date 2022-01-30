@@ -9,6 +9,7 @@ import pickle
 from tensorflow.keras.utils import to_categorical, plot_model
 from tensorflow.compat.v1.keras import backend as K
 
+import keras
 from keras.models import Model, Input
 from keras.layers import Concatenate, LSTM, TimeDistributed, Dense, BatchNormalization, Bidirectional, Lambda
 
@@ -17,6 +18,7 @@ from Scripts.feature_extraction import *
 from Scripts.plotting_functions import *
 from Scripts.data_manipulation import *
 from Scripts.nn_models import baseline_model
+
 
 ### ELMO MODEL MOVED IN NN_MODELS SCRIPT
 
@@ -35,6 +37,8 @@ if tensorflow_version == 1:
     import tensorflow_hub as hub
 else:
     import tensorflow as tf
+
+
 
 """
 Option 1: Input one submission
@@ -169,9 +173,11 @@ if "elmo" in model_name:
 """
 
 print("build model")
-model = baseline_model(max_len, n_words, n_tags)
-model.compile(optimizer="rmsprop", loss="categorical_crossentropy", metrics=["accuracy"])
-model.summary()
+model = keras.models.load_model('modelce')
+#model = baseline_model(max_len, n_words, n_tags)
+#model.compile(optimizer="rmsprop", loss="categorical_crossentropy", metrics=["accuracy"])
+#model.summary()
+#model.load_weights("model1.h5")
 
 #model = build_model(max_len, n_tags)
 #model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
@@ -180,9 +186,11 @@ model.summary()
 """
 11. Fit the model
 """
-history = model.fit(X_train, np.array(y_train), batch_size=32, epochs=15, validation_split=0.2, verbose=2)
-hist = pd.DataFrame(history.history)
-model.save_weights("model1.h5")
+#history = model.fit(X_train, np.array(y_train), batch_size=32, epochs=15, validation_split=0.2, verbose=2)
+#hist = pd.DataFrame(history.history)
+#model.save("modelce")
+#model.save_weights("model1.h5")
+
 #history = model.fit([np.array(X1_train), np.array(X2_train).reshape((len(X2_train), max_len, 40))],
 #                    y_train,
 #                    validation_data=([np.array(X1_valid), np.array(X2_valid).reshape((len(X2_valid), max_len, 40))], y_valid),
@@ -194,8 +202,8 @@ model.save_weights("model1.h5")
 12. Plotting learning curves
 """
 
-plot_learning_curves(hist, "accuracy", "val_accuracy")
-plot_learning_curves(hist, "loss", "val_loss")
+#plot_learning_curves(hist, "accuracy", "val_accuracy")
+#plot_learning_curves(hist, "loss", "val_loss")
 
 
 """
