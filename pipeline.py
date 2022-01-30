@@ -182,7 +182,7 @@ model.summary()
 """
 history = model.fit(X_train, np.array(y_train), batch_size=32, epochs=15, validation_split=0.2, verbose=2)
 hist = pd.DataFrame(history.history)
-
+model.save_weights("model1.h5")
 #history = model.fit([np.array(X1_train), np.array(X2_train).reshape((len(X2_train), max_len, 40))],
 #                    y_train,
 #                    validation_data=([np.array(X1_valid), np.array(X2_valid).reshape((len(X2_valid), max_len, 40))], y_valid),

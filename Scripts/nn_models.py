@@ -1,5 +1,5 @@
 from keras.models import Model, Input
-from keras.layers import Concatenate, LSTM, Embedding, TimeDistributed, Dense, BatchNormalization, Bidirectional, Lambda
+from keras.layers import Dropout, Concatenate, LSTM, Embedding, TimeDistributed, Dense, BatchNormalization, Bidirectional, Lambda
 import tensorflow.compat.v1 as tf
 
 
@@ -11,11 +11,10 @@ def baseline_model(max_len, n_words, n_tags):
     """
 
     input = Input(shape=(max_len,))
-
     model = Embedding(input_dim=n_words, output_dim=max_len, input_length=max_len)(input)
     model = Dropout(0.1)(model)
-    model = Bidirectional(LSTM(units=150, return_sequences=True, recurrent_dropout=0.3))(model)
-
+    model = Bidirectional(LSTM(units=200, return_sequences=True, recurrent_dropout=0.3))(model)
+    model = Bidirectional(LSTM(units=100, return_sequences=True, recurrent_dropout=0.5))(model)
     out = Dense(n_tags, activation="softmax")(model)
     return Model(input, out)
 
