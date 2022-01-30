@@ -63,12 +63,14 @@ tokenized_text = tokenizer(texts)  # Tokenized text is in dataframe format
     and their ids
 """
 
+print("group sentences")
 sentences, labels, sent_ids = group_sents(tokenized_text)
 
 """
 3. Extract features from text
 """
 
+print("Extract features")
 feats1 = spacy_feats_all(sentences, sent_ids)
 feats2 = spacy_feats_tensors_all(sentences)
 feats3 = sentiment_feats_all(sentences, feats1[["Sentence", "Token"]])
@@ -80,6 +82,7 @@ feats = pd.concat([feats1, feats2, feats3, feats4], axis=1)
 4. Read preprocessed train and test data
 """
 
+print("Read preprocessed data")
 path = '/home/kpopova/project/data'
 all_data, train_set, test_set = read_preprocessed_data(path)
 
@@ -97,9 +100,11 @@ n_tags = len(tags)
 6. Set global parameters
 """
 
+print("set parameters")
 batch_size = 32
 max_len = 300
 train_mode = True
+word2idx = {w: i for i, w in enumerate(words)}
 tag2idx = {t: i for i, t in enumerate(tags)}
 idx2tag = {i: t for i, t in enumerate(tags)}
 num_features = 40
@@ -108,6 +113,7 @@ num_features = 40
 7. Sentence preparation
 """
 
+print("sentence preparation")
 sents = group_sentences(train_set, 'BIO')
 sentences = [s for s in sents if len(s) <= max_len]
 
@@ -129,6 +135,7 @@ else:
 8. Split to train and validation data
 """
 
+print("train test split")
 if features:
     X1_train, X1_valid, y_train, y_valid = train_test_split(X1, y, test_size=0.2, random_state=2021)
     X2_train, X2_valid, y_train, y_valid = train_test_split(X2, y, test_size=0.2, random_state=2021)
@@ -161,6 +168,7 @@ if "elmo" in model_name:
 10. Build the model
 """
 
+print("build model")
 model = baseline_model(max_len, n_words, n_tags)
 model.compile(optimizer="rmsprop", loss="categorical_crossentropy", metrics=["accuracy"])
 model.summary()
@@ -201,6 +209,24 @@ plot_learning_curves(hist, "loss", "val_loss")
 """
 14. Test the model with the test set
 """
+
+p = model.predict(np.array(X_test))
+p = np.argmax(p, axis=-1)
+y_test = np.array(y_test)
+y_test = np.argmax(y_test, axis=-1)
+
+y_orig = []
+for sent in y_test:
+    for tag in sent:
+        y_orig.append(tag)
+
+y_preds = []
+for sent in p:
+    for tag in sent:
+        y_preds.append(tag)
+
+report = classification_report(y_orig, y_preds)
+print(report)
 
 #sents_test = group_sentences(test_set, "BIO")
 #sentences_test = [s for s in sents_test if len(s) < max_len]

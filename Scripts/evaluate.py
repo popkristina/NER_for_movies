@@ -1,3 +1,4 @@
+import numpy as np
 
 
 def evaluate_test_data(model, X_test, y_test):

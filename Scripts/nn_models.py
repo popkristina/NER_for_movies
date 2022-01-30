@@ -1,5 +1,5 @@
 from keras.models import Model, Input
-from keras.layers import Concatenate, LSTM, TimeDistributed, Dense, BatchNormalization, Bidirectional, Lambda
+from keras.layers import Concatenate, LSTM, Embedding, TimeDistributed, Dense, BatchNormalization, Bidirectional, Lambda
 import tensorflow.compat.v1 as tf
 
 
