@@ -112,6 +112,15 @@ batch_size = 32
 max_len = 300
 num_features = 40
 
+word2idx = create_dict(words)
+print(word2idx)
+
+tag2idx = create_dict(tags)
+print(tag2idx)
+
+idx2tag = create_dict(tags, reverse=True)
+print(idx2tag)
+"""
 if train_mode:
     word2idx = {w: i for i, w in enumerate(words)}  # Create word-to-index-map
     word2idx_save = open("w2idx.json", "w")  # save it for further use
@@ -136,7 +145,7 @@ else:
         tag2idx = json.load(tag2idx_save)
     with open("i2tg.json") as idx2tag_save:
         idx2tag = json.load(idx2tag_save)
-
+"""
 """
 7. Sentence preparation
 """
