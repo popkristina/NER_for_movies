@@ -1,17 +1,12 @@
 import pandas as pd
 import numpy as np
+from numpy.random import seed
+seed(42)
 import os
 import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
 import pickle
-
-from tensorflow.keras.utils import to_categorical, plot_model
-from tensorflow.compat.v1.keras import backend as K
-
-import keras
-from keras.models import Model, Input
-from keras.layers import Concatenate, LSTM, TimeDistributed, Dense, BatchNormalization, Bidirectional, Lambda
 
 from Scripts.preprocess import *
 from Scripts.feature_extraction import *
@@ -25,6 +20,7 @@ from Scripts.nn_models import baseline_model
 
 features = False  # If sat to true, additional extracted features will be used
 model_name = "baseline"  # One of all models possible
+train_mode = True
 #if features and "bert" in model_name.lower():
 #    throw_error()
 
@@ -35,10 +31,18 @@ if "elmo" in model_name.lower():
 if tensorflow_version == 1:
     import tensorflow.compat.v1 as tf
     import tensorflow_hub as hub
+    from tensorflow.compat.v1.keras import backend as K
 else:
     import tensorflow as tf
+tf.random.set_seed(42)
+from tensorflow.keras.utils import to_categorical, plot_model
 
+import keras
+from keras.models import Model, Input
+from keras.layers import Concatenate, LSTM, TimeDistributed, Dense, BatchNormalization, Bidirectional, Lambda
 
+from keras.backend import manual_variable_initialization
+manual_variable_initialization(True)
 
 """
 Option 1: Input one submission
@@ -107,11 +111,39 @@ n_tags = len(tags)
 print("set parameters")
 batch_size = 32
 max_len = 300
-train_mode = True
-word2idx = {w: i for i, w in enumerate(words)}
-tag2idx = {t: i for i, t in enumerate(tags)}
-idx2tag = {i: t for i, t in enumerate(tags)}
+
+if train_mode:
+    word2idx = {w: i for i, w in enumerate(words)}  # Create word-to-index-map
+    word2idx_save = open("w2idx.json", "w")  # save it for further use
+    json.dump(word2idx, word2idx_save)
+    word2idx.close()
+
+    tag2idx = {t: i for i, t in enumerate(tags)}  # Create tag-to-index-map
+    tag2idx_save = open("t2idx.json", "w")  # save it for further use
+    json.dump(tag2idx, tag2idx_save)
+    tag2idx_save.close()
+
+    idx2tag = {i: t for i, t in enumerate(tags)}  # Create index-to-tag-map
+    idx2tag_save = open("i2tg.json", "w")
+    json.dump(idx2tag, idx2tag_save)
+    idx2tag_save.close()
+
+else:
+    # load them
+    word2idx_save = open("w2idx.json", "r")
+    word2idx = word2idx_save.read()
+    word2idx_save.close()
+
+    tag2idx_save = open("t2idx.json", "r")
+    tag2idx = tag2idx_save.read()
+    tag2idx_save.close()
+
+    idx2tag_save = open("i2tg.json", "r")
+    idx2tag = idx2tag_save.read()
+    idx2tag_save.close()
+
 num_features = 40
+
 
 """
 7. Sentence preparation
@@ -173,11 +205,10 @@ if "elmo" in model_name:
 """
 
 print("build model")
-model = keras.models.load_model('modelce')
 #model = baseline_model(max_len, n_words, n_tags)
-#model.compile(optimizer="rmsprop", loss="categorical_crossentropy", metrics=["accuracy"])
+#model.compile(optimizer="rmsprop", loss="categorical_crossentropy", metrics=["categorical_accuracy"])
 #model.summary()
-#model.load_weights("model1.h5")
+
 
 #model = build_model(max_len, n_tags)
 #model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
@@ -186,10 +217,18 @@ model = keras.models.load_model('modelce')
 """
 11. Fit the model
 """
-#history = model.fit(X_train, np.array(y_train), batch_size=32, epochs=15, validation_split=0.2, verbose=2)
+
+#model.fit(X_train, np.array(y_train), batch_size=32, epochs=10, validation_split=0.2, verbose=1)
+#history = model.fit(X_train, np.array(y_train), batch_size=32, epochs=15, validation_split=0.2, verbose=1)
 #hist = pd.DataFrame(history.history)
-#model.save("modelce")
+
+# Save model architecture in json format
+#model_json = model.to_json()
+#with open("baseline.json", "w") as json_file:
+#    json_file.write(model_json)
+
 #model.save_weights("model1.h5")
+#model.save("new_weights.h5")
 
 #history = model.fit([np.array(X1_train), np.array(X2_train).reshape((len(X2_train), max_len, 40))],
 #                    y_train,
@@ -199,26 +238,24 @@ model = keras.models.load_model('modelce')
 
 
 """
-12. Plotting learning curves
+13. Load saved model
 """
 
-#plot_learning_curves(hist, "accuracy", "val_accuracy")
-#plot_learning_curves(hist, "loss", "val_loss")
+# load json and create model
+json_file = open('baseline.json', 'r')
+loaded_model_json = json_file.read()
+json_file.close()
+loaded_model = tf.keras.models.model_from_json(loaded_model_json)
+loaded_model.compile(optimizer="rmsprop", loss="categorical_crossentropy", metrics=["categorical_accuracy"])
+loaded_model.summary()
+loaded_model.load_weights("model1.h5")
 
-
-"""
-13. Save trained model
-"""
-
-#import tensorflow as tf
-#model.save("/home/kpopova/project/utilities/new_model")
-#new_model = load_model('C:/Users/Kiki/Projects/ner_movies/Scripts/my_model')
 
 """
 14. Test the model with the test set
 """
 
-p = model.predict(np.array(X_test))
+p = loaded_model.predict(np.array(X_test))
 p = np.argmax(p, axis=-1)
 y_test = np.array(y_test)
 y_test = np.argmax(y_test, axis=-1)
@@ -255,3 +292,11 @@ print(report)
 #        y_preds.append(tag)
 #report = classification_report(y_orig, y_preds)
 #print(report)
+
+"""
+12. Plotting learning curves
+"""
+
+#plot_learning_curves(hist, "accuracy", "val_accuracy")
+#plot_learning_curves(hist, "loss", "val_loss")
+
