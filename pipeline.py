@@ -1,7 +1,5 @@
 import pandas as pd
 import numpy as np
-from numpy.random import seed
-seed(42)
 import os
 import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report
@@ -14,13 +12,14 @@ from Scripts.plotting_functions import *
 from Scripts.data_manipulation import *
 from Scripts.nn_models import baseline_model
 
+import json
 
 ### ELMO MODEL MOVED IN NN_MODELS SCRIPT
 
 
 features = False  # If sat to true, additional extracted features will be used
 model_name = "baseline"  # One of all models possible
-train_mode = True
+train_mode = False
 #if features and "bert" in model_name.lower():
 #    throw_error()
 
@@ -111,12 +110,13 @@ n_tags = len(tags)
 print("set parameters")
 batch_size = 32
 max_len = 300
+num_features = 40
 
 if train_mode:
     word2idx = {w: i for i, w in enumerate(words)}  # Create word-to-index-map
     word2idx_save = open("w2idx.json", "w")  # save it for further use
     json.dump(word2idx, word2idx_save)
-    word2idx.close()
+    word2idx_save.close()
 
     tag2idx = {t: i for i, t in enumerate(tags)}  # Create tag-to-index-map
     tag2idx_save = open("t2idx.json", "w")  # save it for further use
@@ -130,20 +130,13 @@ if train_mode:
 
 else:
     # load them
-    word2idx_save = open("w2idx.json", "r")
-    word2idx = word2idx_save.read()
-    word2idx_save.close()
-
-    tag2idx_save = open("t2idx.json", "r")
-    tag2idx = tag2idx_save.read()
-    tag2idx_save.close()
-
-    idx2tag_save = open("i2tg.json", "r")
-    idx2tag = idx2tag_save.read()
-    idx2tag_save.close()
-
-num_features = 40
-
+    with open("w2idx.json") as word2idx_save:
+        word2idx = json.load(word2idx_save)
+        print("Type:", type(word2idx))
+    with open("t2idx.json") as tag2idx_save:
+        tag2idx = json.load(tag2idx_save)
+    with open("i2tg.json") as idx2tag_save:
+        idx2tag = json.load(idx2tag_save)
 
 """
 7. Sentence preparation
@@ -186,7 +179,9 @@ if features:
     y_valid = y_valid.reshape(y_valid.shape[0], y_valid.shape[1], 1)
 
 else:
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, shuffle=False)
+    X_train = X
+    y_train = y
+    #X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, shuffle=False)
 
 """
 9. Setup keras session parameters
@@ -210,15 +205,11 @@ print("build model")
 #model.summary()
 
 
-#model = build_model(max_len, n_tags)
-#model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
-#model.summary()
-
 """
 11. Fit the model
 """
 
-#model.fit(X_train, np.array(y_train), batch_size=32, epochs=10, validation_split=0.2, verbose=1)
+#model.fit(X_train, np.array(y_train), batch_size=32, epochs=15, validation_split=0.2, verbose=1)
 #history = model.fit(X_train, np.array(y_train), batch_size=32, epochs=15, validation_split=0.2, verbose=1)
 #hist = pd.DataFrame(history.history)
 
@@ -228,7 +219,6 @@ print("build model")
 #    json_file.write(model_json)
 
 #model.save_weights("model1.h5")
-#model.save("new_weights.h5")
 
 #history = model.fit([np.array(X1_train), np.array(X2_train).reshape((len(X2_train), max_len, 40))],
 #                    y_train,
@@ -255,6 +245,9 @@ loaded_model.load_weights("model1.h5")
 14. Test the model with the test set
 """
 
+sents_test = group_sentences(test_set, "BIO")
+sentences_test = [s for s in sents_test if len(s) <= max_len]
+
 p = loaded_model.predict(np.array(X_test))
 p = np.argmax(p, axis=-1)
 y_test = np.array(y_test)
@@ -273,8 +266,8 @@ for sent in p:
 report = classification_report(y_orig, y_preds)
 print(report)
 
-#sents_test = group_sentences(test_set, "BIO")
-#sentences_test = [s for s in sents_test if len(s) < max_len]
+
+
 #X1_test, X2_test = prepare_and_pad(sentences_test, max_len)
 #y_test = [[tag2idx[w[len(w) - 1]] for w in s] for s in sentences_test]
 #y_test = pad_sequences(maxlen=max_len, sequences=y_test, padding="post", value=tag2idx["O"])
