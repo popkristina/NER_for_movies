@@ -185,3 +185,14 @@ def fix_vertical_line(df, column):
         col.append(line)
     return col
 
+
+def create_dict(str_list, reverse=False):
+    """
+    Accepts a list of strings and returns a dictionary
+    where each string has an associated number.
+    If reverse is sat to true, the numbers become keys
+    and the strings become values.
+    """
+    if reverse:
+        return {i: st for i, st in enumerate(str_list)}
+    return {st: i for i, st in enumerate(str_list)}

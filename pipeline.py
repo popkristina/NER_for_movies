@@ -132,7 +132,6 @@ else:
     # load them
     with open("w2idx.json") as word2idx_save:
         word2idx = json.load(word2idx_save)
-        print("Type:", type(word2idx))
     with open("t2idx.json") as tag2idx_save:
         tag2idx = json.load(tag2idx_save)
     with open("i2tg.json") as idx2tag_save:
@@ -248,6 +247,20 @@ loaded_model.load_weights("model1.h5")
 sents_test = group_sentences(test_set, "BIO")
 sentences_test = [s for s in sents_test if len(s) <= max_len]
 
+if features:
+    X1_test, X2_test = prepare_and_pad(sentences_test, max_len)
+    y_test = [[tag2idx[w[len(w) - 1]] for w in s] for s in sentences_test]
+    y_test = pad_sequences(maxlen=max_len, sequences=y_test, padding="post", value=tag2idx["O"])
+
+else:
+    X_test = [[word2idx[w[0]] for w in s] for s in sentences_test]
+    X_test = pad_sequences(maxlen=max_len, sequences=X_test, padding="post", value=n_words - 1)
+
+    y_test = [[tag2idx[w[len(w) - 1]] for w in s] for s in sentences_test]
+    y_test = pad_sequences(maxlen=max_len, sequences=y_test, padding="post", value=tag2idx["O"])
+    y_test = [to_categorical(i, num_classes=n_tags) for i in y_test]
+
+
 p = loaded_model.predict(np.array(X_test))
 p = np.argmax(p, axis=-1)
 y_test = np.array(y_test)
@@ -268,9 +281,6 @@ print(report)
 
 
 
-#X1_test, X2_test = prepare_and_pad(sentences_test, max_len)
-#y_test = [[tag2idx[w[len(w) - 1]] for w in s] for s in sentences_test]
-#y_test = pad_sequences(maxlen=max_len, sequences=y_test, padding="post", value=tag2idx["O"])
 ## If batch size is not divisible with number of samples, batch size should be redefined
 #y_pred = model.predict([X1_test, np.array(X2_test).reshape((len(X2_test), max_len, 40))])
 
