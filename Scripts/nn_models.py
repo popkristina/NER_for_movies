@@ -13,23 +13,26 @@ def baseline_model(max_len, n_words, n_tags):
 
     input = Input(shape=(max_len,))
     model = Embedding(input_dim=n_words, output_dim=max_len, input_length=max_len)(input)
-    model = Dropout(0.1)(model)
-    model = Bidirectional(LSTM(units=200, return_sequences=True, recurrent_dropout=0.3))(model)
-    model = Bidirectional(LSTM(units=100, return_sequences=True, recurrent_dropout=0.5))(model)
+    model = Dropout(0.5)(model)
+    model = Bidirectional(LSTM(units=200, return_sequences=True, recurrent_dropout=0.7))(model)
     out = Dense(n_tags, activation="softmax")(model)
     return Model(input, out)
 
 
-def baseline_additional_features(max_len, n_words, n_tags, num_feats):
+def features_model(max_len, n_words, n_tags, num_feats):
     """
-
-
+    Extension of 'baseline_model'.
+    Takes two inputs:
+     1) Tokenized sentences and
+     2) 'num_feats' token-wise features per sentence
+    and concatenates them before passing them through
+    output layer.
     """
     input_tokens = Input(shape=(max_len,))
     emb = Embedding(input_dim=n_words, output_dim=300, input_length=max_len)(input_tokens)
 
     input_feats = Input(shape=(max_len, num_feats,))
-    fts = Dense(n_tags, activation='softmax')(input_feats)
+    fts = Dense(num_feats/2, activation='softmax')(input_feats)
 
     model = Concatenate()([emb, fts])
     model = SpatialDropout1D(0.1)(model)

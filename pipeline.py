@@ -7,10 +7,11 @@ from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
 import argparse
 
-import tensorflow.compat.v1 as tf
+import tensorflow as tf
+#import tensorflow.compat.v1 as tf
 import tensorflow_hub as hub
 from tensorflow.keras.utils import to_categorical, plot_model
-from tensorflow.compat.v1.keras import backend as K
+#from tensorflow.compat.v1.keras import backend as K
 
 from keras.models import Model, Input
 from keras.layers import Concatenate, LSTM, TimeDistributed, Dense, BatchNormalization, Bidirectional, Lambda
@@ -29,19 +30,16 @@ parser.add_argument('-tr', '--train', dest='train_mode', help='Flag whether the 
                     default=False, type=bool)
 parser.add_argument('-ft', '--features', dest='features', help='Flag if the model should extract features',
                     default=False, type=bool)
-parser.add_argument('-tf', '--tensorflow', dest='tf_version', help='Tensorflow version 1 or 2', default=1, type=int)
 #parser.add_argument('-i', '--input_path', dest='input_path', help='Directory where input files are stored.',
 #                    required=True)
 #parser.add_argument('-o', '--output_path', dest='output_path', help='Directory to store results in.',
 #                    required=True)
 args = parser.parse_args()
 
-print(args.model_name)
-print(args.train_mode)
 
-features = True  # If sat to true, additional extracted features will be used
-model_name = "elmo"  # One of all models possible
-train_mode = False
+features = False  # If sat to true, additional extracted features will be used
+model_name = "baseline"  # One of all models possible
+train_mode = True
 #if features and "bert" in model_name.lower():
 #    throw_error()
 
@@ -55,8 +53,6 @@ if "elmo" in model_name.lower():
 #    from tensorflow.compat.v1.keras import backend as K
 #else:
 #    import tensorflow as tf
-
-
 
 
 """
@@ -214,18 +210,18 @@ if "elmo" in model_name:
 
 print("build model")
 #model = build_model(max_len, n_tags)
-#model = baseline_model(max_len, n_words, n_tags)\
+model = baseline_model(max_len, n_words, n_tags)
 #model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
-#model.compile(optimizer="rmsprop", loss="categorical_crossentropy", metrics=["categorical_accuracy"])
-#model.summary()
+model.compile(optimizer="rmsprop", loss="categorical_crossentropy", metrics=["categorical_accuracy"])
+model.summary()
 
 
 """
 11. Fit the model
 """
 
-#history = model.fit(X_train, np.array(y_train), batch_size=32, epochs=15, validation_split=0.2, verbose=1)
-#hist = pd.DataFrame(history.history)
+history = model.fit(X_train, np.array(y_train), batch_size=32, epochs=15, validation_split=0.2, verbose=1)
+hist = pd.DataFrame(history.history)
 
 #history = model.fit([np.array(X1_train), np.array(X2_train).reshape((len(X2_train), max_len, 40))], y_train,
 #                    validation_data=([np.array(X1_valid), np.array(X2_valid).reshape((len(X2_valid), max_len, 40))],
@@ -233,10 +229,10 @@ print("build model")
 
 
 # Save model architecture in json format
-#model_json = model.to_json()
-#with open("model_elmo.json", "w") as json_file:
-#    json_file.write(model_json)
-#model.save_weights("model_elmo.h5")
+model_json = model.to_json()
+with open("baseline_model_no_features.json", "w") as json_file:
+    json_file.write(model_json)
+model.save_weights("baseline_model_no_features.h5")
 
 
 """
@@ -252,14 +248,14 @@ print("build model")
 """
 
 # load json and create model
-json_file = open('model_elmo.json', 'r')
+json_file = open('baseline_model_no_features.json', 'r')
 loaded_model_json = json_file.read()
 json_file.close()
 loaded_model = tf.keras.models.model_from_json(loaded_model_json)
-#loaded_model.compile(optimizer="rmsprop", loss="categorical_crossentropy", metrics=["categorical_accuracy"])
-loaded_model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
+loaded_model.compile(optimizer="rmsprop", loss="categorical_crossentropy", metrics=["categorical_accuracy"])
+#loaded_model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
 loaded_model.summary()
-loaded_model.load_weights("model_elmo.h5")
+loaded_model.load_weights("baseline_model_no_features.h5")
 
 
 """
@@ -285,12 +281,18 @@ else:
 
 
 ## If batch size is not divisible with number of samples, batch size should be redefined
-y_pred = loaded_model.predict([X1_test, np.array(X2_test).reshape((len(X2_test), max_len, 40))])
+#y_pred = loaded_model.predict([X1_test, np.array(X2_test).reshape((len(X2_test), max_len, 40))])
+y_pred = model.predict(np.array(X_test))
 p = np.argmax(y_pred, axis=-1)
+
+y_test = np.array(y_test)
+y_test = np.argmax(y_test, axis=-1)
+
 y_orig = []
 for sent in y_test:
     for tag in sent:
         y_orig.append(tag)
+
 y_preds = []
 for sent in p:
     for tag in sent:
@@ -300,7 +302,7 @@ print(report)
 
 
 """
-p = model.predict(np.array(X_test))
+
 p = np.argmax(p, axis=-1)
 y_test = np.array(y_test)
 y_test = np.argmax(y_test, axis=-1)
@@ -315,6 +317,4 @@ for sent in p:
     for tag in sent:
         y_preds.append(tag)
 
-report = classification_report(y_orig, y_preds)
-print(report)
 """
