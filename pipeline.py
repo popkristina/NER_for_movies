@@ -1,10 +1,20 @@
 import pandas as pd
 import numpy as np
 import os
+import json
 import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
-import pickle
+import argparse
+
+import tensorflow.compat.v1 as tf
+import tensorflow_hub as hub
+from tensorflow.keras.utils import to_categorical, plot_model
+from tensorflow.compat.v1.keras import backend as K
+
+from keras.models import Model, Input
+from keras.layers import Concatenate, LSTM, TimeDistributed, Dense, BatchNormalization, Bidirectional, Lambda
+
 
 from Scripts.preprocess import *
 from Scripts.feature_extraction import *
@@ -12,13 +22,25 @@ from Scripts.plotting_functions import *
 from Scripts.data_manipulation import *
 from Scripts.nn_models import baseline_model
 
-import json
 
-### ELMO MODEL MOVED IN NN_MODELS SCRIPT
+parser = argparse.ArgumentParser(description='Additional arguments for selective operations.')
+parser.add_argument('-m', '--model', dest='model_name', help='Specify the NN model to use', default="elmo", type=str)
+parser.add_argument('-tr', '--train', dest='train_mode', help='Flag whether the script should initiate training',
+                    default=False, type=bool)
+parser.add_argument('-ft', '--features', dest='features', help='Flag if the model should extract features',
+                    default=False, type=bool)
+parser.add_argument('-tf', '--tensorflow', dest='tf_version', help='Tensorflow version 1 or 2', default=1, type=int)
+#parser.add_argument('-i', '--input_path', dest='input_path', help='Directory where input files are stored.',
+#                    required=True)
+#parser.add_argument('-o', '--output_path', dest='output_path', help='Directory to store results in.',
+#                    required=True)
+args = parser.parse_args()
 
+print(args.model_name)
+print(args.train_mode)
 
-features = False  # If sat to true, additional extracted features will be used
-model_name = "baseline"  # One of all models possible
+features = True  # If sat to true, additional extracted features will be used
+model_name = "elmo"  # One of all models possible
 train_mode = False
 #if features and "bert" in model_name.lower():
 #    throw_error()
@@ -27,21 +49,15 @@ tensorflow_version = 2
 if "elmo" in model_name.lower():
     tensorflow_version = 1
 
-if tensorflow_version == 1:
-    import tensorflow.compat.v1 as tf
-    import tensorflow_hub as hub
-    from tensorflow.compat.v1.keras import backend as K
-else:
-    import tensorflow as tf
-tf.random.set_seed(42)
-from tensorflow.keras.utils import to_categorical, plot_model
+#if tensorflow_version == 1:
+#    import tensorflow.compat.v1 as tf
+#    import tensorflow_hub as hub
+#    from tensorflow.compat.v1.keras import backend as K
+#else:
+#    import tensorflow as tf
 
-import keras
-from keras.models import Model, Input
-from keras.layers import Concatenate, LSTM, TimeDistributed, Dense, BatchNormalization, Bidirectional, Lambda
 
-from keras.backend import manual_variable_initialization
-manual_variable_initialization(True)
+
 
 """
 Option 1: Input one submission
@@ -97,7 +113,7 @@ all_data, train_set, test_set = read_preprocessed_data(path)
 5. Create sets of words and tags (for training)
 """
 
-words = list(set(train_set["Token"].values))
+words = list(set(all_data["Token"].values))
 n_words = len(words)
 tags = list(set(train_set['BIO'].values))
 n_tags = len(tags)
@@ -112,40 +128,30 @@ batch_size = 32
 max_len = 300
 num_features = 40
 
-word2idx = create_dict(words)
-print(word2idx)
-
-tag2idx = create_dict(tags)
-print(tag2idx)
-
-idx2tag = create_dict(tags, reverse=True)
-print(idx2tag)
-"""
 if train_mode:
-    word2idx = {w: i for i, w in enumerate(words)}  # Create word-to-index-map
+    word2idx = create_dict(words)  # Create word-to-index-map
     word2idx_save = open("w2idx.json", "w")  # save it for further use
     json.dump(word2idx, word2idx_save)
     word2idx_save.close()
 
-    tag2idx = {t: i for i, t in enumerate(tags)}  # Create tag-to-index-map
+    tag2idx = create_dict(tags)  # Create tag-to-index-map
     tag2idx_save = open("t2idx.json", "w")  # save it for further use
     json.dump(tag2idx, tag2idx_save)
     tag2idx_save.close()
 
-    idx2tag = {i: t for i, t in enumerate(tags)}  # Create index-to-tag-map
+    idx2tag = create_dict(tags, reverse=True)  # Create index-to-tag-map
     idx2tag_save = open("i2tg.json", "w")
     json.dump(idx2tag, idx2tag_save)
     idx2tag_save.close()
 
 else:
-    # load them
     with open("w2idx.json") as word2idx_save:
         word2idx = json.load(word2idx_save)
     with open("t2idx.json") as tag2idx_save:
         tag2idx = json.load(tag2idx_save)
     with open("i2tg.json") as idx2tag_save:
         idx2tag = json.load(idx2tag_save)
-"""
+
 """
 7. Sentence preparation
 """
@@ -175,7 +181,7 @@ else:
 print("train test split")
 if features:
     X1_train, X1_valid, y_train, y_valid = train_test_split(X1, y, test_size=0.2, random_state=2021)
-    X2_train, X2_valid, y_train, y_valid = train_test_split(X2, y, test_size=0.2, random_state=2021)
+    X2_train, X2_valid, _, _ = train_test_split(X2, y, test_size=0.2, random_state=2021)
     X1_train = X1_train[:(len(X1_train) // batch_size) * batch_size]
     X2_train = X2_train[:(len(X2_train) // batch_size) * batch_size]
     X1_valid = X1_valid[:(len(X1_valid) // batch_size) * batch_size]
@@ -189,7 +195,6 @@ if features:
 else:
     X_train = X
     y_train = y
-    #X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, shuffle=False)
 
 """
 9. Setup keras session parameters
@@ -208,7 +213,9 @@ if "elmo" in model_name:
 """
 
 print("build model")
-#model = baseline_model(max_len, n_words, n_tags)
+#model = build_model(max_len, n_tags)
+#model = baseline_model(max_len, n_words, n_tags)\
+#model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
 #model.compile(optimizer="rmsprop", loss="categorical_crossentropy", metrics=["categorical_accuracy"])
 #model.summary()
 
@@ -217,22 +224,27 @@ print("build model")
 11. Fit the model
 """
 
-#model.fit(X_train, np.array(y_train), batch_size=32, epochs=15, validation_split=0.2, verbose=1)
 #history = model.fit(X_train, np.array(y_train), batch_size=32, epochs=15, validation_split=0.2, verbose=1)
 #hist = pd.DataFrame(history.history)
 
+#history = model.fit([np.array(X1_train), np.array(X2_train).reshape((len(X2_train), max_len, 40))], y_train,
+#                    validation_data=([np.array(X1_valid), np.array(X2_valid).reshape((len(X2_valid), max_len, 40))],
+#                                     y_valid), batch_size=batch_size, epochs=15, verbose=1)
+
+
 # Save model architecture in json format
 #model_json = model.to_json()
-#with open("baseline.json", "w") as json_file:
+#with open("model_elmo.json", "w") as json_file:
 #    json_file.write(model_json)
+#model.save_weights("model_elmo.h5")
 
-#model.save_weights("model1.h5")
 
-#history = model.fit([np.array(X1_train), np.array(X2_train).reshape((len(X2_train), max_len, 40))],
-#                    y_train,
-#                    validation_data=([np.array(X1_valid), np.array(X2_valid).reshape((len(X2_valid), max_len, 40))], y_valid),
-#                    batch_size=batch_size, epochs=2, verbose=1)
-#hist = pd.DataFrame(history.history)
+"""
+12. Plotting learning curves
+"""
+
+#plot_learning_curves(hist, "accuracy", "val_accuracy")
+#plot_learning_curves(hist, "loss", "val_loss")
 
 
 """
@@ -240,13 +252,14 @@ print("build model")
 """
 
 # load json and create model
-json_file = open('baseline.json', 'r')
+json_file = open('model_elmo.json', 'r')
 loaded_model_json = json_file.read()
 json_file.close()
 loaded_model = tf.keras.models.model_from_json(loaded_model_json)
-loaded_model.compile(optimizer="rmsprop", loss="categorical_crossentropy", metrics=["categorical_accuracy"])
+#loaded_model.compile(optimizer="rmsprop", loss="categorical_crossentropy", metrics=["categorical_accuracy"])
+loaded_model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
 loaded_model.summary()
-loaded_model.load_weights("model1.h5")
+loaded_model.load_weights("model_elmo.h5")
 
 
 """
@@ -270,7 +283,24 @@ else:
     y_test = [to_categorical(i, num_classes=n_tags) for i in y_test]
 
 
-p = loaded_model.predict(np.array(X_test))
+
+## If batch size is not divisible with number of samples, batch size should be redefined
+y_pred = loaded_model.predict([X1_test, np.array(X2_test).reshape((len(X2_test), max_len, 40))])
+p = np.argmax(y_pred, axis=-1)
+y_orig = []
+for sent in y_test:
+    for tag in sent:
+        y_orig.append(tag)
+y_preds = []
+for sent in p:
+    for tag in sent:
+        y_preds.append(tag)
+report = classification_report(y_orig, y_preds)
+print(report)
+
+
+"""
+p = model.predict(np.array(X_test))
 p = np.argmax(p, axis=-1)
 y_test = np.array(y_test)
 y_test = np.argmax(y_test, axis=-1)
@@ -287,28 +317,4 @@ for sent in p:
 
 report = classification_report(y_orig, y_preds)
 print(report)
-
-
-
-## If batch size is not divisible with number of samples, batch size should be redefined
-#y_pred = model.predict([X1_test, np.array(X2_test).reshape((len(X2_test), max_len, 40))])
-
-#p = np.argmax(y_pred, axis=-1)
-#y_orig = []
-#for sent in y_test:
-#    for tag in sent:
-#        y_orig.append(tag)
-#y_preds = []
-#for sent in p:
-#    for tag in sent:
-#        y_preds.append(tag)
-#report = classification_report(y_orig, y_preds)
-#print(report)
-
 """
-12. Plotting learning curves
-"""
-
-#plot_learning_curves(hist, "accuracy", "val_accuracy")
-#plot_learning_curves(hist, "loss", "val_loss")
-

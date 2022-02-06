@@ -196,3 +196,4 @@ def create_dict(str_list, reverse=False):
     if reverse:
         return {i: st for i, st in enumerate(str_list)}
     return {st: i for i, st in enumerate(str_list)}
+
