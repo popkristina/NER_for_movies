@@ -230,58 +230,44 @@ if "elmo" in model_name:
 
 
 """
-10. Build the model
+10. Build and fit the model or load if previously saved
 """
 
-print("build model")
-#model = build_model(max_len, n_tags)
-model = baseline_model(max_len, n_words, n_tags)
-model.compile(optimizer=optimizer, loss=loss, metrics=[metrics])
-model.summary()
+if train_mode:
+    print("Build model")
+    model = baseline_model(max_len, n_words, n_tags)
+    model.compile(optimizer=optimizer, loss=loss, metrics=[metrics])
+    model.summary()
+
+    print("Fit model")
+    history = model.fit(X_train, np.array(y_train), batch_size=batch_size, epochs=epochs, validation_split=valid_split, verbose=1)
+    #history = model.fit([X1_train, np.array(X2_train).reshape((len(X2_train), max_len, num_features))],
+    #                    np.array(y_train), batch_size=batch_size, epochs=15, validation_split=0.2, verbose=1)
+    hist = pd.DataFrame(history.history)
+
+    #history = model.fit([np.array(X1_train), np.array(X2_train).reshape((len(X2_train), max_len, 40))], y_train,
+    #                    validation_data=([np.array(X1_valid), np.array(X2_valid).reshape((len(X2_valid), max_len, 40))],
+    #                                     y_valid), batch_size=batch_size, epochs=15, verbose=1)
+
+    # plot_learning_curves(hist, "accuracy", "val_accuracy")
+    # plot_learning_curves(hist, "loss", "val_loss")
+
+    print("Saving model")
+    model_json = model.to_json()
+    with open(model_name + ".json", "w") as json_file:
+        json_file.write(model_json)
+    model.save_weights(model_name + ".h5")
 
 
-"""
-11. Fit the model
-"""
-
-history = model.fit(X_train, np.array(y_train), batch_size=batch_size, epochs=epochs, validation_split=valid_split, verbose=1)
-#history = model.fit([X1_train, np.array(X2_train).reshape((len(X2_train), max_len, num_features))],
-#                    np.array(y_train), batch_size=batch_size, epochs=15, validation_split=0.2, verbose=1)
-hist = pd.DataFrame(history.history)
-
-#history = model.fit([np.array(X1_train), np.array(X2_train).reshape((len(X2_train), max_len, 40))], y_train,
-#                    validation_data=([np.array(X1_valid), np.array(X2_valid).reshape((len(X2_valid), max_len, 40))],
-#                                     y_valid), batch_size=batch_size, epochs=15, verbose=1)
-
-
-# Save model architecture in json format
-model_json = model.to_json()
-with open("baseline_model_features.json", "w") as json_file:
-    json_file.write(model_json)
-model.save_weights("baseline_model_features.h5")
-
-
-"""
-12. Plotting learning curves
-"""
-
-#plot_learning_curves(hist, "accuracy", "val_accuracy")
-#plot_learning_curves(hist, "loss", "val_loss")
-
-
-"""
-13. Load saved model
-"""
-
-# load json and create model
-json_file = open('baseline_model_features.json', 'r')
-loaded_model_json = json_file.read()
-json_file.close()
-loaded_model = tf.keras.models.model_from_json(loaded_model_json)
-#loaded_model.compile(optimizer="rmsprop", loss="categorical_crossentropy", metrics=["categorical_accuracy"])
-#loaded_model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
-#loaded_model.summary()
-#loaded_model.load_weights("baseline_model_features.h5")
+else:
+    # load json and create model
+    json_file = open(model_name + ".json", "r")
+    loaded_model_json = json_file.read()
+    json_file.close()
+    model = tf.keras.models.model_from_json(loaded_model_json)
+    model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
+    model.summary()
+    model.load_weights(model_name + ".h5")
 
 
 """
@@ -293,7 +279,6 @@ sentences_test = [s for s in sents_test if len(s) <= max_len]
 
 y_test = [[tag2idx[w[len(w) - 1]] for w in s] for s in sentences_test]
 y_test = pad_sequences(maxlen=max_len, sequences=y_test, padding="post", value=tag2idx["O"])
-#y_test = [to_categorical(i, num_classes=n_tags) for i in y_test]
 
 if 'elmo' in model_name:
     X_words_test = pad_textual_data(sentences_test, max_len)
