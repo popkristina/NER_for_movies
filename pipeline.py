@@ -163,7 +163,7 @@ else:
 7. Sentence preparation
 """
 
-print("sentence preparation")
+print("Sentence preparation")
 sents = group_sentences(train_set, 'BIO')
 sentences = [s for s in sents if len(s) <= max_len]
 
@@ -294,6 +294,7 @@ sentences_test = [s for s in sents_test if len(s) <= max_len]
 
 y_test = [[tag2idx[w[len(w) - 1]] for w in s] for s in sentences_test]
 y_test = pad_sequences(maxlen=max_len, sequences=y_test, padding="post", value=tag2idx["O"])
+#y_test = [to_categorical(i, num_classes=n_tags) for i in y_test]
 
 if features and 'elmo' in model_name:
     X1_test, X2_test = prepare_and_pad(sentences_test, max_len)
@@ -301,11 +302,9 @@ elif features:
     X1_test = [[word2idx[w[0]] for w in s] for s in sentences_test]
     X1_test = pad_sequences(maxlen=max_len, sequences=X1_test, padding="post", value=n_words-1)
     X2_test = pad_feature_data(sentences_test, max_len, num_features, word2idx)
-    #y_test = [to_categorical(i, num_classes=n_tags) for i in y_test]
 else:
     X_test = [[word2idx[w[0]] for w in s] for s in sentences_test]
     X_test = pad_sequences(maxlen=max_len, sequences=X_test, padding="post", value=n_words-1)
-    #y_test = [to_categorical(i, num_classes=n_tags) for i in y_test]
 
 
 ## If batch size is not divisible with number of samples, batch size should be redefined

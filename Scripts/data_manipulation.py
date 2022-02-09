@@ -69,6 +69,27 @@ def pad_textual_data(sentences, max_len):
     return x
 
 
+def pad_textual_char_data(sentences, max_len, max_len_char, n_chars, char2idx):
+    """
+    Accepts a list of tokenized sentences and
+    pads each sentence to 'max_len' length and
+    pads each word in a sentence to 'max_len_char'.
+    """
+    x = []
+    for sentence in sentences:
+        padded_sentence = []
+        for i in range(max_len):
+            padded_word = []
+            for j in range(max_len_char):
+                try:
+                    padded_word.append(char2idx.get(sentence[i][0][j]))
+                except:
+                    padded_word.append(n_chars)
+            padded_sentence.append(padded_word)
+        x.append(np.array(padded_sentence))
+    return x
+
+
 def pad_feature_data(sentences, max_len, num_feats, word2idx):
     X2 = []
     for sentence in sentences:
