@@ -12,9 +12,10 @@ def group_sentences(data, category=""):
     for curr_id in sent_ids:
         tmp_df = data[data['Sent_id'] == curr_id]
         if len(category) > 1:
-            tmp_df = pd.concat([tmp_df['Token'], tmp_df["Token_index"], tmp_df.iloc[:, 4:44], tmp_df[category]], axis=1)
+            tmp_df = pd.concat([tmp_df['Token'], tmp_df["Token_index"], tmp_df.iloc[:, 4:44], tmp_df.iloc[:, 137:147],
+                                tmp_df[category]], axis=1)
         else:
-            tmp_df = pd.concat([tmp_df['Token'], tmp_df["Token_index"], tmp_df.iloc[:, 4:44]], axis=1)
+            tmp_df = pd.concat([tmp_df['Token'], tmp_df["Token_index"], tmp_df.iloc[:, 4:44], tmp_df.iloc[:, 137:157]], axis=1)
         records = tmp_df.to_records(index=False)
         all_sents.append(records)
     return all_sents
@@ -34,10 +35,12 @@ class SentenceGetter(object):
         self.n_sent = 1
         self.data = data
         self.empty = False
-        agg_func = lambda s: [(w, p, c, s) for w, p, c, s in zip(s["Words"].values.tolist(),
-                                                                 s["POS_tag"].values.tolist(),
-                                                                 s["Chunk_tag"].values.tolist(),
-                                                                 s["sent_id"].values.tolist())]
+        agg_func = lambda s: [(w, p, c, s) for
+                              w, p, c, s in
+                              zip(s["Words"].values.tolist(),
+                                  s["POS_tag"].values.tolist(),
+                                  s["Chunk_tag"].values.tolist(),
+                                  s["sent_id"].values.tolist())]
         self.grouped = self.data.groupby("Sentence").apply(agg_func)
         self.sentences = [s for s in self.grouped]
 
@@ -59,52 +62,40 @@ def pad_textual_data(sentences, max_len):
     for sentence in sentences:
         padded_sentence = []
         for word in sentence:
-            padded_sentence.append(word[0])
+            padded_sentence.append(word)
         for i in range(len(sentence) - 1, max_len - 1):
             padded_sentence.append("__PAD__")
         x.append(padded_sentence)
     return x
 
 
-def pad_feature_data(sentences, max_len, num_feats):
-    x = []
-    for sentence in sentences:
-        sent_ft = list()
-        for word in sentence:
-            ft = [word[i] for i in range(1, num_feats-1)]
-            sent_ft.append(ft)
-        for j in range(len(sentence) - 1, max_len - 1):
-            ft = [0] * num_feats
-            sent_ft.append(ft)
-        x.append(sent_ft)
-    return x
-
-
-def prepare_and_pad(sentences, max_len):
-    X1 = [[w[0] for w in s] for s in sentences]
-    new_X = []
-    for seq in X1:
-        new_seq = []
-        for i in range(max_len):
-            try:
-                new_seq.append(seq[i])
-            except:
-                new_seq.append("__PAD__")
-        new_X.append(new_seq)
-    X1 = new_X
-
+def pad_feature_data(sentences, max_len, num_feats, word2idx):
     X2 = []
     for sentence in sentences:
         sent_ft = list()
         for word in sentence:
-            ft = [word[i] for i in range(1, 41)]
+            ft = [word[i] for i in range(1, num_feats + 1)]
             sent_ft.append(ft)
         for j in range(len(sentence) - 1, max_len - 1):
-            ft = [0] * 40
+            ft = [0] * num_feats
             sent_ft.append(ft)
         X2.append(sent_ft)
 
-    return X1, X2
+    x = []
+    for sentence in sentences:
+        sent_ft = list()
+        for word in sentence:
+            ft = [word[i] for i in range(1, num_feats+1)]
+            sent_ft.append(ft)
+        for j in range(len(sentence) - 1, max_len - 1):
+            ft = list()
+            #ft = [0] * num_feats
+            #sent_ft.append(ft)
+            for i in range(1, num_feats + 1):
+                ft.append(word2idx['ENDPAD'])
+            sent_ft.append(ft)
+        x.append(sent_ft)
+    return x, X2
 
 
 def create_alt_movie_dict(movies_matched):

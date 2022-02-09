@@ -21,7 +21,7 @@ from Scripts.preprocess import *
 from Scripts.feature_extraction import *
 from Scripts.plotting_functions import *
 from Scripts.data_manipulation import *
-from Scripts.nn_models import baseline_model
+from Scripts.nn_models import baseline_model, features_model
 
 
 parser = argparse.ArgumentParser(description='Additional arguments for selective operations.')
@@ -37,8 +37,15 @@ parser.add_argument('-ft', '--features', dest='features', help='Flag if the mode
 args = parser.parse_args()
 
 
-features = False  # If sat to true, additional extracted features will be used
-model_name = "baseline"  # One of all models possible
+def ElmoEmbedding(x):
+    return elmo_model(inputs={"tokens": tf.squeeze(tf.cast(x, tf.string)),
+                              "sequence_len": tf.constant(batch_size*[max_len])},
+                      signature="tokens",
+                      as_dict=True)["elmo"]
+
+
+features = True  # If sat to true, additional extracted features will be used
+model_name = "elmo"  # One of all models possible
 train_mode = True
 #if features and "bert" in model_name.lower():
 #    throw_error()
@@ -47,12 +54,12 @@ tensorflow_version = 2
 if "elmo" in model_name.lower():
     tensorflow_version = 1
 
-#if tensorflow_version == 1:
-#    import tensorflow.compat.v1 as tf
-#    import tensorflow_hub as hub
-#    from tensorflow.compat.v1.keras import backend as K
-#else:
-#    import tensorflow as tf
+if tensorflow_version == 1:
+    import tensorflow.compat.v1 as tf
+    import tensorflow_hub as hub
+    from tensorflow.compat.v1.keras import backend as K
+else:
+    import tensorflow as tf
 
 
 """
@@ -110,10 +117,10 @@ all_data, train_set, test_set = read_preprocessed_data(path)
 """
 
 words = list(set(all_data["Token"].values))
+words.append('ENDPAD')
 n_words = len(words)
 tags = list(set(train_set['BIO'].values))
 n_tags = len(tags)
-
 
 """
 6. Set global parameters
@@ -122,7 +129,10 @@ n_tags = len(tags)
 print("set parameters")
 batch_size = 32
 max_len = 300
-num_features = 40
+num_features = 50
+optimizer = "adam"
+loss = "sparse_categorical_crossentropy"
+metrics = "accuracy"
 
 if train_mode:
     word2idx = create_dict(words)  # Create word-to-index-map
@@ -140,6 +150,7 @@ if train_mode:
     json.dump(idx2tag, idx2tag_save)
     idx2tag_save.close()
 
+
 else:
     with open("w2idx.json") as word2idx_save:
         word2idx = json.load(word2idx_save)
@@ -156,26 +167,27 @@ print("sentence preparation")
 sents = group_sentences(train_set, 'BIO')
 sentences = [s for s in sents if len(s) <= max_len]
 
+y = [[tag2idx[w[len(w) - 1]] for w in s] for s in sentences]
+y = pad_sequences(maxlen=max_len, sequences=y, padding="post", value=tag2idx["O"])
+#y = [to_categorical(i, num_classes=n_tags) for i in y]
+
+if "elmo" in model_name:
+    X_words = pad_textual_data(sentences, max_len)
+elif "baseline" in model_name:
+    X_words = [[word2idx[w[0]] for w in s] for s in sentences]
+    X_words = pad_sequences(maxlen=max_len, sequences=X_words, padding="post", value=n_words-1)
+
 if features:
-    X1, X2 = prepare_and_pad(sentences, max_len)
-    y = [[tag2idx[w[len(w) - 1]] for w in s] for s in sentences]
-    y = pad_sequences(maxlen=max_len, sequences=y, padding="post", value=tag2idx["O"])
+    X_features, X2 = pad_feature_data(sentences, max_len, num_features, word2idx)
 
-else:
-    X = [[word2idx[w[0]] for w in s] for s in sentences]
-    X = pad_sequences(maxlen=max_len, sequences=X, padding="post", value=n_words - 1)
-
-    y = [[tag2idx[w[len(w) - 1]] for w in s] for s in sentences]
-    y = pad_sequences(maxlen=max_len, sequences=y, padding="post", value=tag2idx["O"])
-    y = [to_categorical(i, num_classes=n_tags) for i in y]
-
-
+print(X_features[0])
+print(X2[0])
 """
 8. Split to train and validation data
 """
 
 print("train test split")
-if features:
+if features and 'elmo' in model_name:
     X1_train, X1_valid, y_train, y_valid = train_test_split(X1, y, test_size=0.2, random_state=2021)
     X2_train, X2_valid, _, _ = train_test_split(X2, y, test_size=0.2, random_state=2021)
     X1_train = X1_train[:(len(X1_train) // batch_size) * batch_size]
@@ -188,9 +200,24 @@ if features:
     y_train = y_train.reshape(y_train.shape[0], y_train.shape[1], 1)
     y_valid = y_valid.reshape(y_valid.shape[0], y_valid.shape[1], 1)
 
+elif 'elmo' in model_name:
+    X1_train, X1_valid, y_train, y_valid = train_test_split(X1, y, test_size=0.2, random_state=2021)
+    X1_train = X1_train[:(len(X1_train) // batch_size) * batch_size]
+    X1_valid = X1_valid[:(len(X1_valid) // batch_size) * batch_size]
+    y_train = y_train[:(len(y_train) // batch_size) * batch_size]
+    y_valid = y_valid[:(len(y_valid) // batch_size) * batch_size]
+    y_train = y_train.reshape(y_train.shape[0], y_train.shape[1], 1)
+    y_valid = y_valid.reshape(y_valid.shape[0], y_valid.shape[1], 1)
+
+elif features:
+    X1_train = X1
+    X2_train = X2
+    y_train = y
+
 else:
     X_train = X
     y_train = y
+
 
 """
 9. Setup keras session parameters
@@ -210,9 +237,7 @@ if "elmo" in model_name:
 
 print("build model")
 #model = build_model(max_len, n_tags)
-model = baseline_model(max_len, n_words, n_tags)
-#model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
-model.compile(optimizer="rmsprop", loss="categorical_crossentropy", metrics=["categorical_accuracy"])
+model.compile(optimizer=optimizer, loss=loss, metrics=[metrics])
 model.summary()
 
 
@@ -220,7 +245,9 @@ model.summary()
 11. Fit the model
 """
 
-history = model.fit(X_train, np.array(y_train), batch_size=32, epochs=15, validation_split=0.2, verbose=1)
+#history = model.fit(X_train, np.array(y_train), batch_size=32, epochs=15, validation_split=0.2, verbose=1)
+#history = model.fit([X1_train, np.array(X2_train).reshape((len(X2_train), max_len, num_features))],
+#                    np.array(y_train), batch_size=batch_size, epochs=15, validation_split=0.2, verbose=1)
 hist = pd.DataFrame(history.history)
 
 #history = model.fit([np.array(X1_train), np.array(X2_train).reshape((len(X2_train), max_len, 40))], y_train,
@@ -230,9 +257,9 @@ hist = pd.DataFrame(history.history)
 
 # Save model architecture in json format
 model_json = model.to_json()
-with open("baseline_model_no_features.json", "w") as json_file:
+with open("baseline_model_features.json", "w") as json_file:
     json_file.write(model_json)
-model.save_weights("baseline_model_no_features.h5")
+model.save_weights("baseline_model_features.h5")
 
 
 """
@@ -248,14 +275,14 @@ model.save_weights("baseline_model_no_features.h5")
 """
 
 # load json and create model
-json_file = open('baseline_model_no_features.json', 'r')
+json_file = open('baseline_model_features.json', 'r')
 loaded_model_json = json_file.read()
 json_file.close()
 loaded_model = tf.keras.models.model_from_json(loaded_model_json)
-loaded_model.compile(optimizer="rmsprop", loss="categorical_crossentropy", metrics=["categorical_accuracy"])
+#loaded_model.compile(optimizer="rmsprop", loss="categorical_crossentropy", metrics=["categorical_accuracy"])
 #loaded_model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
-loaded_model.summary()
-loaded_model.load_weights("baseline_model_no_features.h5")
+#loaded_model.summary()
+#loaded_model.load_weights("baseline_model_features.h5")
 
 
 """
@@ -265,28 +292,29 @@ loaded_model.load_weights("baseline_model_no_features.h5")
 sents_test = group_sentences(test_set, "BIO")
 sentences_test = [s for s in sents_test if len(s) <= max_len]
 
-if features:
-    X1_test, X2_test = prepare_and_pad(sentences_test, max_len)
-    y_test = [[tag2idx[w[len(w) - 1]] for w in s] for s in sentences_test]
-    y_test = pad_sequences(maxlen=max_len, sequences=y_test, padding="post", value=tag2idx["O"])
+y_test = [[tag2idx[w[len(w) - 1]] for w in s] for s in sentences_test]
+y_test = pad_sequences(maxlen=max_len, sequences=y_test, padding="post", value=tag2idx["O"])
 
+if features and 'elmo' in model_name:
+    X1_test, X2_test = prepare_and_pad(sentences_test, max_len)
+elif features:
+    X1_test = [[word2idx[w[0]] for w in s] for s in sentences_test]
+    X1_test = pad_sequences(maxlen=max_len, sequences=X1_test, padding="post", value=n_words-1)
+    X2_test = pad_feature_data(sentences_test, max_len, num_features, word2idx)
+    #y_test = [to_categorical(i, num_classes=n_tags) for i in y_test]
 else:
     X_test = [[word2idx[w[0]] for w in s] for s in sentences_test]
-    X_test = pad_sequences(maxlen=max_len, sequences=X_test, padding="post", value=n_words - 1)
-
-    y_test = [[tag2idx[w[len(w) - 1]] for w in s] for s in sentences_test]
-    y_test = pad_sequences(maxlen=max_len, sequences=y_test, padding="post", value=tag2idx["O"])
-    y_test = [to_categorical(i, num_classes=n_tags) for i in y_test]
-
+    X_test = pad_sequences(maxlen=max_len, sequences=X_test, padding="post", value=n_words-1)
+    #y_test = [to_categorical(i, num_classes=n_tags) for i in y_test]
 
 
 ## If batch size is not divisible with number of samples, batch size should be redefined
 #y_pred = loaded_model.predict([X1_test, np.array(X2_test).reshape((len(X2_test), max_len, 40))])
-y_pred = model.predict(np.array(X_test))
+y_pred = model.predict([X1_test, np.array(X2_test).reshape((len(X2_test), max_len, num_features))])
 p = np.argmax(y_pred, axis=-1)
 
-y_test = np.array(y_test)
-y_test = np.argmax(y_test, axis=-1)
+#y_test = np.array(y_test)
+#y_test = np.argmax(y_test, axis=-1)
 
 y_orig = []
 for sent in y_test:
@@ -306,15 +334,5 @@ print(report)
 p = np.argmax(p, axis=-1)
 y_test = np.array(y_test)
 y_test = np.argmax(y_test, axis=-1)
-
-y_orig = []
-for sent in y_test:
-    for tag in sent:
-        y_orig.append(tag)
-
-y_preds = []
-for sent in p:
-    for tag in sent:
-        y_preds.append(tag)
 
 """
