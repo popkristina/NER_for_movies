@@ -6,53 +6,6 @@ import string
 from difflib import SequenceMatcher
 
 
-def group_sentences(data, category=""):
-    all_sents = []
-    sent_ids = data['Sent_id'].unique()
-    for curr_id in sent_ids:
-        tmp_df = data[data['Sent_id'] == curr_id]
-        if len(category) > 1:
-            tmp_df = pd.concat([tmp_df['Token'], tmp_df["Token_index"], tmp_df.iloc[:, 4:44], tmp_df.iloc[:, 137:147],
-                                tmp_df[category]], axis=1)
-        else:
-            tmp_df = pd.concat([tmp_df['Token'], tmp_df["Token_index"], tmp_df.iloc[:, 4:44], tmp_df.iloc[:, 137:157]], axis=1)
-        records = tmp_df.to_records(index=False)
-        all_sents.append(records)
-    return all_sents
-
-
-def group_sents(submissions_tokenized):
-    getter = SentenceGetter(submissions_tokenized)
-    sentences = [[word[0] for word in sentence] for sentence in getter.sentences]
-    labels = [[s[1] for s in sentence] for sentence in getter.sentences]
-    sent_ids = [[s_id[3] for s_id in sentence] for sentence in getter.sentences]
-    return sentences, labels, sent_ids
-
-
-class SentenceGetter(object):
-
-    def __init__(self, data):
-        self.n_sent = 1
-        self.data = data
-        self.empty = False
-        agg_func = lambda s: [(w, p, c, s) for
-                              w, p, c, s in
-                              zip(s["Words"].values.tolist(),
-                                  s["POS_tag"].values.tolist(),
-                                  s["Chunk_tag"].values.tolist(),
-                                  s["sent_id"].values.tolist())]
-        self.grouped = self.data.groupby("Sentence").apply(agg_func)
-        self.sentences = [s for s in self.grouped]
-
-    def get_next(self):
-        try:
-            s = self.grouped
-            self.n_sent += 1
-            return s
-        except:
-            return None
-
-
 def pad_textual_data(sentences, max_len):
     """
     Accepts a list of tokenized sentences and
@@ -127,8 +80,10 @@ def create_alt_movie_dict(movies_matched):
     ##### id ##### original_name ##### alternative #####
     ####################################################
 
-    and returns a dictionary where each key is an original title name and its corresponding values are
-    the alternative names (in alternative languages)
+    and returns a dictionary where each key is an original
+    title name and its corresponding values are the
+    alternative names (in alternative languages)
+
     """
     alt_names = dict()
     for index, row in movies_matched.iterrows():
@@ -140,8 +95,9 @@ def create_alt_movie_dict(movies_matched):
 
 def read_preprocessed_data(path):
     """
-    Read preprocessed train and test data in "all features" format".
-    Every row represents one token, its sentence identification, its token identification and its other
+    Read preprocessed train and test data in "all features"
+    format". Every row represents one token, its sentence
+    identification, its token identification and its other
     features.
     """
 
@@ -209,3 +165,49 @@ def create_dict(str_list, reverse=False):
         return {i: st for i, st in enumerate(str_list)}
     return {st: i for i, st in enumerate(str_list)}
 
+
+def group_sentences(data, category=""):
+    all_sents = []
+    sent_ids = data['Sent_id'].unique()
+    for curr_id in sent_ids:
+        tmp_df = data[data['Sent_id'] == curr_id]
+        if len(category) > 1:
+            tmp_df = pd.concat([tmp_df['Token'], tmp_df["Token_index"], tmp_df.iloc[:, 4:44], tmp_df.iloc[:, 137:147],
+                                tmp_df[category]], axis=1)
+        else:
+            tmp_df = pd.concat([tmp_df['Token'], tmp_df["Token_index"], tmp_df.iloc[:, 4:44], tmp_df.iloc[:, 137:157]], axis=1)
+        records = tmp_df.to_records(index=False)
+        all_sents.append(records)
+    return all_sents
+
+
+def group_sents(submissions_tokenized):
+    getter = SentenceGetter(submissions_tokenized)
+    sentences = [[word[0] for word in sentence] for sentence in getter.sentences]
+    labels = [[s[1] for s in sentence] for sentence in getter.sentences]
+    sent_ids = [[s_id[3] for s_id in sentence] for sentence in getter.sentences]
+    return sentences, labels, sent_ids
+
+
+class SentenceGetter(object):
+
+    def __init__(self, data):
+        self.n_sent = 1
+        self.data = data
+        self.empty = False
+        agg_func = lambda s: [(w, p, c, s) for
+                              w, p, c, s in
+                              zip(s["Words"].values.tolist(),
+                                  s["POS_tag"].values.tolist(),
+                                  s["Chunk_tag"].values.tolist(),
+                                  s["sent_id"].values.tolist())]
+        self.grouped = self.data.groupby("Sentence").apply(agg_func)
+        self.sentences = [s for s in self.grouped]
+
+    def get_next(self):
+        try:
+            s = self.grouped
+            self.n_sent += 1
+            return s
+        except:
+            return None

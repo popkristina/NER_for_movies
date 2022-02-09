@@ -44,8 +44,8 @@ def ElmoEmbedding(x):
                       as_dict=True)["elmo"]
 
 
-features = True  # If sat to true, additional extracted features will be used
-model_name = "elmo"  # One of all models possible
+features = False  # If sat to true, additional extracted features will be used
+model_name = "baseline"  # One of all models possible
 train_mode = True
 #if features and "bert" in model_name.lower():
 #    throw_error()
@@ -128,7 +128,9 @@ n_tags = len(tags)
 
 print("set parameters")
 batch_size = 32
+epochs = 15
 max_len = 300
+valid_split = 0.2
 num_features = 50
 optimizer = "adam"
 loss = "sparse_categorical_crossentropy"
@@ -169,24 +171,20 @@ sentences = [s for s in sents if len(s) <= max_len]
 
 y = [[tag2idx[w[len(w) - 1]] for w in s] for s in sentences]
 y = pad_sequences(maxlen=max_len, sequences=y, padding="post", value=tag2idx["O"])
-#y = [to_categorical(i, num_classes=n_tags) for i in y]
 
 if "elmo" in model_name:
     X_words = pad_textual_data(sentences, max_len)
 elif "baseline" in model_name:
     X_words = [[word2idx[w[0]] for w in s] for s in sentences]
     X_words = pad_sequences(maxlen=max_len, sequences=X_words, padding="post", value=n_words-1)
-
 if features:
     X_features, X2 = pad_feature_data(sentences, max_len, num_features, word2idx)
 
-print(X_features[0])
-print(X2[0])
+
 """
 8. Split to train and validation data
 """
 
-print("train test split")
 if features and 'elmo' in model_name:
     X1_train, X1_valid, y_train, y_valid = train_test_split(X1, y, test_size=0.2, random_state=2021)
     X2_train, X2_valid, _, _ = train_test_split(X2, y, test_size=0.2, random_state=2021)
@@ -210,12 +208,12 @@ elif 'elmo' in model_name:
     y_valid = y_valid.reshape(y_valid.shape[0], y_valid.shape[1], 1)
 
 elif features:
-    X1_train = X1
-    X2_train = X2
+    X1_train = X_words
+    X2_train = X_features
     y_train = y
 
 else:
-    X_train = X
+    X_train = X_words
     y_train = y
 
 
@@ -237,6 +235,7 @@ if "elmo" in model_name:
 
 print("build model")
 #model = build_model(max_len, n_tags)
+model = baseline_model(max_len, n_words, n_tags)
 model.compile(optimizer=optimizer, loss=loss, metrics=[metrics])
 model.summary()
 
@@ -245,7 +244,7 @@ model.summary()
 11. Fit the model
 """
 
-#history = model.fit(X_train, np.array(y_train), batch_size=32, epochs=15, validation_split=0.2, verbose=1)
+history = model.fit(X_train, np.array(y_train), batch_size=batch_size, epochs=epochs, validation_split=valid_split, verbose=1)
 #history = model.fit([X1_train, np.array(X2_train).reshape((len(X2_train), max_len, num_features))],
 #                    np.array(y_train), batch_size=batch_size, epochs=15, validation_split=0.2, verbose=1)
 hist = pd.DataFrame(history.history)
@@ -296,24 +295,22 @@ y_test = [[tag2idx[w[len(w) - 1]] for w in s] for s in sentences_test]
 y_test = pad_sequences(maxlen=max_len, sequences=y_test, padding="post", value=tag2idx["O"])
 #y_test = [to_categorical(i, num_classes=n_tags) for i in y_test]
 
-if features and 'elmo' in model_name:
-    X1_test, X2_test = prepare_and_pad(sentences_test, max_len)
-elif features:
-    X1_test = [[word2idx[w[0]] for w in s] for s in sentences_test]
-    X1_test = pad_sequences(maxlen=max_len, sequences=X1_test, padding="post", value=n_words-1)
-    X2_test = pad_feature_data(sentences_test, max_len, num_features, word2idx)
-else:
-    X_test = [[word2idx[w[0]] for w in s] for s in sentences_test]
-    X_test = pad_sequences(maxlen=max_len, sequences=X_test, padding="post", value=n_words-1)
+if 'elmo' in model_name:
+    X_words_test = pad_textual_data(sentences_test, max_len)
+elif 'baseline' in model_name:
+    X_words_test = [[word2idx[w[0]] for w in s] for s in sentences_test]
+    X_words_test = pad_sequences(maxlen=max_len, sequences=X_words_test, padding="post", value=n_words - 1)
+
+if features:
+    X_features_test, X2_test = pad_feature_data(sentences_test, max_len, num_features, word2idx)
 
 
 ## If batch size is not divisible with number of samples, batch size should be redefined
 #y_pred = loaded_model.predict([X1_test, np.array(X2_test).reshape((len(X2_test), max_len, 40))])
-y_pred = model.predict([X1_test, np.array(X2_test).reshape((len(X2_test), max_len, num_features))])
-p = np.argmax(y_pred, axis=-1)
+#y_pred = model.predict([X1_test, np.array(X2_test).reshape((len(X2_test), max_len, num_features))])
+y_pred = model.predict(X_words_test)
 
-#y_test = np.array(y_test)
-#y_test = np.argmax(y_test, axis=-1)
+p = np.argmax(y_pred, axis=-1)
 
 y_orig = []
 for sent in y_test:
@@ -326,12 +323,3 @@ for sent in p:
         y_preds.append(tag)
 report = classification_report(y_orig, y_preds)
 print(report)
-
-
-"""
-
-p = np.argmax(p, axis=-1)
-y_test = np.array(y_test)
-y_test = np.argmax(y_test, axis=-1)
-
-"""
