@@ -23,6 +23,8 @@ from Scripts.plotting_functions import *
 from Scripts.data_manipulation import *
 from Scripts.nn_models import baseline_model, features_model
 from Scripts.test_models import flatten_predictions
+from Scripts.bert_finetune_lib import *
+
 
 parser = argparse.ArgumentParser(description='Additional arguments for selective operations.')
 parser.add_argument('-m', '--model', dest='model_name', help='Specify the NN model to use', default="elmo", type=str)
@@ -45,7 +47,13 @@ def ElmoEmbedding(x):
 
 
 features = False  # If sat to true, additional extracted features will be used
+
+feat_based_models = ["char", "char_fts", "baseline", "baseline_fts", "elmo", "elmo_fts"]
+bert_models = ["bert_cs", "bert_unc", "funnel", "bert_mult_unc", "bert_mult_cs", "electra"]
+
 model_name = "baseline"  # One of all models possible
+if model_name in bert_models:
+    bert_flag = True
 train_mode = True
 #if features and "bert" in model_name.lower():
 #    throw_error()
@@ -169,9 +177,13 @@ else:
 
 print("Sentence preparation")
 sents = group_sentences(train_set, 'BIO')
-sentences = [s for s in sents if len(s) <= max_len]
+sents = [s for s in sents if len(s) <= max_len]
+if bert_flag:
+    sentences = [[word[0] for word in sentence] for sentence in sents]
+else:
+    sentences = sents
 
-y = [[tag2idx[w[len(w) - 1]] for w in s] for s in sentences]
+y = [[tag2idx[w[len(w)-1]] for w in s] for s in sents]
 y = pad_sequences(maxlen=max_len, sequences=y, padding="post", value=tag2idx["O"])
 
 if "elmo" in model_name:
