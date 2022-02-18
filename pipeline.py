@@ -135,6 +135,8 @@ num_features = 50
 optimizer = "adam"
 loss = "sparse_categorical_crossentropy"
 metrics = "accuracy"
+learning_rate = 1e-05 #relevant for bert
+max_grad_norm = 8 #relevant for bert
 
 if train_mode:
     word2idx = create_dict(words)  # Create word-to-index-map

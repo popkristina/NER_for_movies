@@ -35,10 +35,10 @@ def select_tokenizer(str):
 
 def tokenize(sentence, sentence_labels, str_model):
     """
-    Accepts a list of tokenized sentences and their
-    corresponding token labels, and a string for the
-    pre-trained model. Based on the 'str_model', it
-    retrieves a pre-trained word-piece tokenizer.
+    Accepts a tokenized sentence and its token
+    labels, and a string for the pre-trained model.
+    Based on the 'str_model', it retrieves a
+    pre-trained word-piece tokenizer.
 
     Counts the number of subwords that the words
     get split into, and extends the corresponding
@@ -55,3 +55,12 @@ def tokenize(sentence, sentence_labels, str_model):
         labels.extend([label] * n_subwords)
     return tokenized_sentence, labels
 
+
+def set_processor_params():
+    """
+    Needed for bert
+    """
+    device = 'cuda' if cuda.is_available() else 'cpu'
+    n_gpu = torch.cuda.device_count()
+    torch.cuda.get_device_name(0)
+    return device, n_gpu
