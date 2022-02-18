@@ -22,7 +22,7 @@ from Scripts.feature_extraction import *
 from Scripts.plotting_functions import *
 from Scripts.data_manipulation import *
 from Scripts.nn_models import baseline_model, features_model
-
+from Scripts.test_models import flatten_predictions
 
 parser = argparse.ArgumentParser(description='Additional arguments for selective operations.')
 parser.add_argument('-m', '--model', dest='model_name', help='Specify the NN model to use', default="elmo", type=str)
@@ -185,35 +185,27 @@ if features:
 8. Split to train and validation data
 """
 
-if features and 'elmo' in model_name:
-    X1_train, X1_valid, y_train, y_valid = train_test_split(X1, y, test_size=0.2, random_state=2021)
-    X2_train, X2_valid, _, _ = train_test_split(X2, y, test_size=0.2, random_state=2021)
-    X1_train = X1_train[:(len(X1_train) // batch_size) * batch_size]
-    X2_train = X2_train[:(len(X2_train) // batch_size) * batch_size]
-    X1_valid = X1_valid[:(len(X1_valid) // batch_size) * batch_size]
-    X2_valid = X2_valid[:(len(X2_valid) // batch_size) * batch_size]
-
+if 'elmo' in model_name:
+    X_words_train, X_words_valid, y_train, y_valid = train_test_split(X_words, y, test_size=0.2, random_state=2021)
+    X_words_train = X_words_train[:(len(X_words_train) // batch_size) * batch_size]
+    X_words_valid = X_words_valid[:(len(X_words_valid) // batch_size) * batch_size]
     y_train = y_train[:(len(y_train) // batch_size) * batch_size]
     y_valid = y_valid[:(len(y_valid) // batch_size) * batch_size]
     y_train = y_train.reshape(y_train.shape[0], y_train.shape[1], 1)
     y_valid = y_valid.reshape(y_valid.shape[0], y_valid.shape[1], 1)
 
-elif 'elmo' in model_name:
-    X1_train, X1_valid, y_train, y_valid = train_test_split(X1, y, test_size=0.2, random_state=2021)
-    X1_train = X1_train[:(len(X1_train) // batch_size) * batch_size]
-    X1_valid = X1_valid[:(len(X1_valid) // batch_size) * batch_size]
-    y_train = y_train[:(len(y_train) // batch_size) * batch_size]
-    y_valid = y_valid[:(len(y_valid) // batch_size) * batch_size]
-    y_train = y_train.reshape(y_train.shape[0], y_train.shape[1], 1)
-    y_valid = y_valid.reshape(y_valid.shape[0], y_valid.shape[1], 1)
+    if features:
+        X_features_train, X_features_valid, _, _ = train_test_split(X_features, y, test_size=0.2, random_state=2021)
+        X_features_train = X_features_train[:(len(X_features_train) // batch_size) * batch_size]
+        X_features_valid = X_features_valid[:(len(X_features_valid) // batch_size) * batch_size]
 
 elif features:
-    X1_train = X_words
-    X2_train = X_features
+    X_words_train = X_words
+    X_features_train = X_features
     y_train = y
 
 else:
-    X_train = X_words
+    X_words_train = X_words
     y_train = y
 
 
@@ -249,8 +241,8 @@ if train_mode:
     #                    validation_data=([np.array(X1_valid), np.array(X2_valid).reshape((len(X2_valid), max_len, 40))],
     #                                     y_valid), batch_size=batch_size, epochs=15, verbose=1)
 
-    # plot_learning_curves(hist, "accuracy", "val_accuracy")
-    # plot_learning_curves(hist, "loss", "val_loss")
+    #plot_learning_curves(hist, "accuracy", "val_accuracy")
+    #plot_learning_curves(hist, "loss", "val_loss")
 
     print("Saving model")
     model_json = model.to_json()
@@ -296,15 +288,7 @@ if features:
 y_pred = model.predict(X_words_test)
 
 p = np.argmax(y_pred, axis=-1)
-
-y_orig = []
-for sent in y_test:
-    for tag in sent:
-        y_orig.append(tag)
-
-y_preds = []
-for sent in p:
-    for tag in sent:
-        y_preds.append(tag)
+y_orig = flatten_predictions(y_test)
+y_preds = flatten_predictions(p)
 report = classification_report(y_orig, y_preds)
 print(report)
