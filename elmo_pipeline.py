@@ -17,19 +17,28 @@ from keras.models import Model, Input
 from keras.layers import Concatenate, LSTM, TimeDistributed, Dense, \
     BatchNormalization, Bidirectional, Lambda
 
-
 from Scripts.preprocess import *
 from Scripts.feature_extraction import *
 from Scripts.plotting_functions import *
 from Scripts.data_manipulation import *
-from Scripts.nn_models import baseline_model, features_model
-from Scripts.test_models import flatten_predictions
+from Scripts.evaluate import *
 from Scripts.train_models import *
+
+# DEFINE GLOBAL PARAMETERS
+param_dict = dict()
+param_dict["batch_size"] = 32
+param_dict["epochs"] = 20
+param_dict["max_len"] = 300
+param_dict["validation_split"] = 0.2
+param_dict["num_features"] = 50
+param_dict["optimizer"] = "adam"
+param_dict["loss"] = "sparse_categorical_crossentropy"
+param_dict["metrics"] = ["accuracy"]
 
 
 def ElmoEmbedding(x):
     return elmo_model(inputs={"tokens": tf.squeeze(tf.cast(x, tf.string)),
-                              "sequence_len": tf.constant(batch_size*[max_len])},
+                              "sequence_len": tf.constant(param_dict["batch_size"]*[param_dict["max_len"]])},
                       signature="tokens",
                       as_dict=True)["elmo"]
 
@@ -63,8 +72,8 @@ def build_model(max_len, n_tags):
     return model
 
 
-features = True # If sat to true, additional extracted features will be used
-train_mode = True
+features = True  # If sat to true, additional extracted features will be used
+train_mode = False
 model_name = "elmo_best"
 
 """
@@ -93,59 +102,20 @@ sentences, labels, sent_ids = group_sents(tokenized_text)
 if features:
     feats = extract_all_feats(sentences, sent_ids)
 
+# 4. READ PREPROCESSED TRAIN AND TEST DATA
+all_data, train_set, test_set = read_preprocessed_data('/home/kpopova/project/data')
 
-"""
-4. Read preprocessed train and test data
-"""
-
-print("Read preprocessed data")
-path = '/home/kpopova/project/data'
-all_data, train_set, test_set = read_preprocessed_data(path)
-
-"""
-5. Create sets of words and tags (for training)
-"""
-
-words = list(set(all_data["Token"].values))
-words.append('ENDPAD')
-n_words = len(words)
-tags = list(set(train_set['BIO'].values))
-n_tags = len(tags)
-
-"""
-6. Set global parameters
-"""
-
-print("set parameters")
-max_len = 300
-param_dict = dict()
-param_dict["batch_size"] = 32
-param_dict["epochs"] = 20
-param_dict["max_len"] = 300
-param_dict["validation_split"] = 0.2
-param_dict["num_features"] = 50
-param_dict["optimizer"] = "adam"
-param_dict["loss"] = "sparse_categorical_crossentropy"
-param_dict["metrics"] = "accuracy"
-
+# 5. CREATE SETS OF WORDS AND TAGS (FOR TRAINING)
+words, n_words, tags, n_tags = create_word_and_tag_list(all_data)
 
 if train_mode:
     word2idx = create_dict(words)  # Create word-to-index-map
-    word2idx_save = open("helper_dicts/w2idx.json", "w")  # save it for further use
-    json.dump(word2idx, word2idx_save)
-    word2idx_save.close()
-
     tag2idx = create_dict(tags)  # Create tag-to-index-map
-    tag2idx_save = open("helper_dicts/t2idx.json", "w")  # save it for further use
-    json.dump(tag2idx, tag2idx_save)
-    tag2idx_save.close()
-
     idx2tag = {v: k for k, v in tag2idx.items()}
-    #idx2tag = create_dict(tags, reverse=True)  # Create index-to-tag-map
-    idx2tag_save = open("helper_dicts/i2tg.json", "w")
-    json.dump(idx2tag, idx2tag_save)
-    idx2tag_save.close()
 
+    save_as_json(word2idx, "w2idx")
+    save_as_json(tag2idx, "t2idx")
+    save_as_json(idx2tag, "i2tg")
 
 else:
     with open("helper_dicts/w2idx.json") as word2idx_save:
@@ -155,52 +125,32 @@ else:
     with open("helper_dicts/i2tg.json") as idx2tag_save:
         idx2tag = json.load(idx2tag_save)
 
-"""
-7. Sentence preparation
-"""
-
-print("Sentence preparation")
+# 7. SENTENCE PREPARATION
 sents = group(train_set, 'BIO')
-sentences = [s for s in sents if len(s) <= max_len]
+sentences = [s for s in sents if len(s) <= param_dict["max_len"]]
 
 y = [[tag2idx[w[len(w)-1]] for w in s] for s in sentences]
-y = pad_sequences(maxlen=max_len, sequences=y, padding="post", value=tag2idx["O"])
+y = pad_sequences(maxlen=param_dict["max_len"], sequences=y, padding="post", value=tag2idx["O"])
 
-X1 = pad_textual_data(sentences, max_len)
-
+X1 = pad_textual_data(sentences, param_dict["max_len"])
 if features:
-    X2 = pad_feature_data(sentences, max_len, param_dict["num_features"])
+    X2 = pad_feature_data(sentences, param_dict["max_len"], param_dict["num_features"])
 
-
-"""
-8. Split to train and validation data
-"""
-batch_size = param_dict["batch_size"]
-X1_train, X1_valid, y_train, y_valid = split_to_fit_batch(X1, y, batch_size)
-
+# 8. SPLIT TO TRAIN AND VALIDATION DATA
 if features:
-    X2_train, X2_valid, _, _ = train_test_split(X2, y, test_size=0.2, random_state=2021)
-    X2_train = X2_train[:(len(X2_train) // batch_size) * batch_size]
-    X2_valid = X2_valid[:(len(X2_valid) // batch_size) * batch_size]
+    X1_train, X1_valid, X2_train, X2_valid, y_train, y_valid = split_to_fit_batch(X1, y, param_dict["batch_size"], X2)
+else:
+    X1_train, X1_valid, y_train, y_valid = split_to_fit_batch(X1, y, param_dict["batch_size"])
 
-
-"""
-#9. Setup keras session parameters
-"""
-
+# 9. SETUP KERAS SESSION PARAMETERS
 tf.disable_eager_execution()
 elmo_model = hub.Module("https://tfhub.dev/google/elmo/3", trainable=True)
 sess = tf.Session()
 K.set_session(sess)
 sess.run([tf.global_variables_initializer(), tf.tables_initializer()])
 
-
-"""
-#10. Build and fit the model or load if previously saved
-"""
-
+# 10. BUILD AND FIT THE MODEL OR LOAD IF PREV. SAVED
 if train_mode:
-    print("Build model")
     if features:
         model = build_model(max_len, n_tags)
     else:
@@ -212,7 +162,6 @@ if train_mode:
 
     if features:
         model, history = train_with_features(X1_train, X2_train, X1_valid, X2_valid, y_train, y_valid, param_dict, model)
-
     else:
         model, history = train(X1_train, X1_valid, y_train, y_valid, param_dict, model)
 
@@ -229,38 +178,33 @@ else:
     loaded_model_json = json_file.read()
     json_file.close()
     model = tf.keras.models.model_from_json(loaded_model_json)
-    model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
+    model.compile(optimizer=param_dict["optimizer"], loss=param_dict["loss"], metrics=param_dict["metrics"])
     model.summary()
-    model.load_weights(model_name + ".h5")
+    model.load_weights("models/" + model_name + ".h5")
 
 
-"""
-#14. Test the model with the test set
-"""
-
+# 14. TEST THE MODEL WITH THE TEST SET
 sents_test = group(test_set, "BIO")
-sentences_test = [s for s in sents_test if len(s) <= max_len]
+sentences_test = [s for s in sents_test if len(s) <= param_dict["max_len"]]
 
 y_test = [[tag2idx[w[len(w) - 1]] for w in s] for s in sentences_test]
-y_test = pad_sequences(maxlen=max_len, sequences=y_test, padding="post", value=tag2idx["O"])
+y_test = pad_sequences(maxlen=param_dict["max_len"], sequences=y_test, padding="post", value=tag2idx["O"])
 
-X_words_test = pad_textual_data(sentences_test, max_len)
-
+X1_test = pad_textual_data(sentences_test, param_dict["max_len"])
 if features:
-    X_features_test = pad_feature_data(sentences_test, max_len, num_features)
+    X2_test = pad_feature_data(sentences_test, param_dict["max_len"], param_dict["num_features"])
 
-
-## If batch size is not divisible with number of samples, batch size should be redefined
+# If batch size is not divisible with number of samples, batch size should be redefined
 if features:
-    y_pred = model.predict([X_words_test_test, np.array(X_features_test).reshape((len(X_features_test), max_len, num_features))])
+    y_pred = model.predict(
+        [X1_test, np.array(X2_test).reshape((len(X2_test), param_dict["max_len"], param_dict["num_features"]))])
 else:
-    y_pred = model.predict(X_words_test)
+    y_pred = model.predict(X1_test)
 
 p = np.argmax(y_pred, axis=-1)
 y_orig = flatten_predictions(y_test)
 y_preds = flatten_predictions(p)
-report = classification_report(y_orig, y_preds)
-print(report)
+print(classification_report(y_orig, y_preds))
 
 #report = classification_report(all_true_labels, all_preds)
 #print(report)

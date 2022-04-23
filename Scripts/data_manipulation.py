@@ -5,6 +5,7 @@ from collections import Counter
 import string
 from difflib import SequenceMatcher
 from sklearn.model_selection import train_test_split
+import json
 
 
 def pad_textual_data(sentences, max_len):
@@ -296,5 +297,41 @@ def split_to_fit_batch(x1, y, bs, x2="", reshape_y=True):
         y_train = y_train.reshape(y_train.shape[0], y_train.shape[1], 1)
         y_valid = y_valid.reshape(y_valid.shape[0], y_valid.shape[1], 1)
 
+    if x2 is not "":
+        x2_train, x2_valid, _, _ = train_test_split(x2, y, test_size=0.2, random_state=2021)
+        x2_train = x2_train[:(len(x2_train) // bs) * bs]
+        x2_valid = x2_valid[:(len(x2_valid) // bs) * bs]
+        return x1_train, x1_valid, x2_train, x2_valid, y_train, y_valid
+
     return x1_train, x1_valid, y_train, y_valid
 
+
+def save_as_json(dict, name):
+    """
+    Accepts a word-to-index map in a dict format and
+    a name for the map. Save it to json file.
+    """
+    dict_save = open("./helper_dicts/" + name + ".json", "w")
+    json.dump(dict, dict_save)
+    dict_save.close()
+    # word2idx_save = open("helper_dicts/w2idx.json", "w")  # save it for further use
+    # json.dump(word2idx, word2idx_save)
+    # word2idx_save.close()
+
+    # tag2idx_save = open("helper_dicts/t2idx.json", "w")  # save it for further use
+    # json.dump(tag2idx, tag2idx_save)
+    # tag2idx_save.close()
+
+
+def create_word_and_tag_list(data):
+    """
+    Accepts a dataframe with tokenized sentences,
+    and returns a list of all od the distinct words
+    and tags in the dataset.
+    """
+    words = list(set(data["Token"].values))
+    words.append('ENDPAD')
+    n_words = len(words)
+    tags = list(set(data['BIO'].values))
+    n_tags = len(tags)
+    return words, n_words, tags, n_tags

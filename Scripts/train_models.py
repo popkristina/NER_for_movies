@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 
 def train_with_features(x1_train, x2_train, x1_valid, x2_valid, y_train, y_valid, param_dict, model):
