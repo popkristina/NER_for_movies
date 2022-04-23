@@ -1,0 +1,1 @@
+{"B-keyword-pos": 0, "B-movie-pos": 1, "B-actor-pos": 2, "I-actor-neg": 3, "I-movie-neg": 4, "B-gen-pos": 5, "I-keyword-neg": 6, "I-gen-pos": 7, "B-keyword-neg": 8, "I-actor-pos": 9, "B-actor-neg": 10, "O": 11, "B-movie-neg": 12, "I-keyword-pos": 13, "B-gen-neg": 14, "I-gen-neg": 15, "I-movie-pos": 16}

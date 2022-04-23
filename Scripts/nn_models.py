@@ -41,12 +41,6 @@ def features_model(max_len, n_words, n_tags, num_feats):
     out = TimeDistributed(Dense(n_tags, activation="softmax"))(model)
     return Model([input_tokens, input_feats], out)
 
-#def ElmoEmbedding(x):
-#    return elmo_model(inputs={"tokens": tf.squeeze(tf.cast(x, tf.string)),
-#                              "sequence_len": tf.constant(batch_size*[max_len])},
-#                      signature="tokens",
-#                      as_dict=True)["elmo"]
-
 
 def elmo_model_features(max_len, n_tags):
     word_input_layer = Input(shape=(max_len, 40,))

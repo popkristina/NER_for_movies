@@ -1,7 +1,13 @@
 import numpy as np
 
 
-def evaluate_test_data(model, X_test, y_test):
+def evaluate_from_model(model, X_test, y_test):
+    """
+    Accepts a trained model, test set and list
+    of original labels. Returns a classification
+    report with precision, recall and f1 scores.
+    """
+
     p = model.predict(np.array(X_test))
     p = np.argmax(p, axis=-1)
     y_test = np.array(y_test)

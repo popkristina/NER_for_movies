@@ -4,6 +4,7 @@ import numpy as np
 from collections import Counter
 import string
 from difflib import SequenceMatcher
+from sklearn.model_selection import train_test_split
 
 
 def pad_textual_data(sentences, max_len):
@@ -11,14 +12,18 @@ def pad_textual_data(sentences, max_len):
     Accepts a list of tokenized sentences and
     pads each sentence to 'max_len' length.
     """
-    x = list()
-    for sentence in sentences:
-        padded_sentence = []
-        for word in sentence:
-            padded_sentence.append(word)
-        for i in range(len(sentence) - 1, max_len - 1):
-            padded_sentence.append("__PAD__")
-        x.append(padded_sentence)
+    x = [[w[0] for w in s] for s in sentences]
+
+    new_x = []
+    for seq in x:
+        new_seq = []
+        for i in range(max_len):
+            try:
+                new_seq.append(seq[i])
+            except:
+                new_seq.append("__PAD__")
+        new_x.append(new_seq)
+    x = new_x
     return x
 
 
@@ -43,33 +48,27 @@ def pad_textual_char_data(sentences, max_len, max_len_char, n_chars, char2idx):
     return x
 
 
-def pad_feature_data(sentences, max_len, num_feats, word2idx):
-    X2 = []
-    for sentence in sentences:
-        sent_ft = list()
-        for word in sentence:
-            ft = [word[i] for i in range(1, num_feats + 1)]
-            sent_ft.append(ft)
-        for j in range(len(sentence) - 1, max_len - 1):
-            ft = [0] * num_feats
-            sent_ft.append(ft)
-        X2.append(sent_ft)
-
+def pad_feature_data(sentences, max_len, num_feats):
+    """
+    Accepts a list of tokenized sentences and their features.
+    Pads each sentence to 'max_len' length and the vector of
+    its features to 'max_len' vectors of zeros.
+    """
     x = []
     for sentence in sentences:
         sent_ft = list()
         for word in sentence:
-            ft = [word[i] for i in range(1, num_feats+1)]
+            ft = list()
+            for i in range(1, num_feats+1):
+                ft.append(word[i])
             sent_ft.append(ft)
         for j in range(len(sentence) - 1, max_len - 1):
             ft = list()
-            #ft = [0] * num_feats
-            #sent_ft.append(ft)
-            for i in range(1, num_feats + 1):
-                ft.append(word2idx['ENDPAD'])
+            for i in range(1, num_feats+1):
+                ft.append(0)
             sent_ft.append(ft)
         x.append(sent_ft)
-    return x, X2
+    return x
 
 
 def create_alt_movie_dict(movies_matched):
@@ -167,21 +166,33 @@ def create_dict(str_list, reverse=False):
 
 
 def group_sentences(data, category=""):
+    """
+    Accepts the tokenized data with features,
+    and creates a list where every element is another
+    list for the current tokenized sentence, and it
+    consists of a list of features for every token that
+    comprise the sentence.
+    """
     all_sents = []
     sent_ids = data['Sent_id'].unique()
     for curr_id in sent_ids:
         tmp_df = data[data['Sent_id'] == curr_id]
         if len(category) > 1:
-            tmp_df = pd.concat([tmp_df['Token'], tmp_df["Token_index"], tmp_df.iloc[:, 4:44], tmp_df.iloc[:, 137:147],
-                                tmp_df[category]], axis=1)
+            tmp_df = pd.concat([tmp_df['Sent_id'], tmp_df['Token'], tmp_df["Token_index"],
+                                tmp_df.iloc[:, 4:44], tmp_df.iloc[:, 137:147], tmp_df[category]], axis=1)
         else:
-            tmp_df = pd.concat([tmp_df['Token'], tmp_df["Token_index"], tmp_df.iloc[:, 4:44], tmp_df.iloc[:, 137:157]], axis=1)
+            tmp_df = pd.concat([tmp_df['Sent_id'], tmp_df['Token'], tmp_df["Token_index"],
+                                tmp_df.iloc[:, 4:44], tmp_df.iloc[:, 137:147]], axis=1)
         records = tmp_df.to_records(index=False)
         all_sents.append(records)
     return all_sents
 
 
 def group_sents(submissions_tokenized):
+    """
+    Groups tokenized sentences in a list-of-lists form
+    with a Sentence Getter object.
+    """
     getter = SentenceGetter(submissions_tokenized)
     sentences = [[word[0] for word in sentence] for sentence in getter.sentences]
     labels = [[s[1] for s in sentence] for sentence in getter.sentences]
@@ -190,24 +201,100 @@ def group_sents(submissions_tokenized):
 
 
 class SentenceGetter(object):
-
+    """
+    Creates an object out of a dataframe with tokenized
+    data and its features. Groups them into list of lists
+    format where they are grouped by their sentence id.
+    """
     def __init__(self, data):
         self.n_sent = 1
         self.data = data
         self.empty = False
-        agg_func = lambda s: [(w, p, c, s) for
-                              w, p, c, s in
-                              zip(s["Words"].values.tolist(),
-                                  s["POS_tag"].values.tolist(),
-                                  s["Chunk_tag"].values.tolist(),
-                                  s["sent_id"].values.tolist())]
+        agg_func = lambda s: [(w, p, c, s) for w, p, c, s in
+                    zip(s["Words"].values.tolist(),
+                        s["POS_tag"].values.tolist(),
+                        s["Chunk_tag"].values.tolist(),
+                        s["sent_id"].values.tolist())]
         self.grouped = self.data.groupby("Sentence").apply(agg_func)
         self.sentences = [s for s in self.grouped]
 
     def get_next(self):
+        """
+        In a grouped object of sentences,
+        returns the next sentence
+        """
         try:
             s = self.grouped
             self.n_sent += 1
             return s
         except:
             return None
+
+
+def group(data, category):
+    all_sents = []
+    sent_ids = data['Sent_id'].unique()
+    for curr_id in sent_ids:
+        tmp_df = data[data['Sent_id'] == curr_id]
+        tmp_df = pd.concat([tmp_df['Token'], tmp_df["Token_index"], tmp_df.iloc[:, 4:44],
+                            tmp_df.iloc[:, 137:147], tmp_df[category]], axis=1)
+        records = tmp_df.to_records(index=False)
+        all_sents.append(records)
+    return all_sents
+
+
+def remove_sents_over_threshold(sents, threshold):
+    """
+    Given a list of sentences and a
+    threshold, return only the ones
+    that have more words than the
+    threshold.
+    """
+    sentences = list()
+    for s in sents:
+        if len(s) < threshold:
+            sentences.append(s)
+    return sentences
+
+
+def data_stats(data):
+    """
+    Accepts a dataframe and returns counts of its categories
+    """
+    frequencies = data.BIO.value_counts()
+    tags = {}
+    for tag, count in zip(frequencies.index, frequencies):
+        if tag != "O":
+            # if tag[2:] not in tags.keys():
+            tags[tag[2:]] = count
+        else:
+            tags[tag[2:]] += count
+        continue
+
+    print("Number of tags: {}".format(len(data.BIO.unique())))
+    print("Tag frequencies: {}".format(frequencies))
+    print("Categories: ")
+    print(sorted(tags.items(), key=lambda x: x[1], reverse=True))
+
+
+def split_to_fit_batch(x1, y, bs, x2="", reshape_y=True):
+    """
+    Split train dataset and its labels
+    to train and validation dataset such
+    that it is divisible with the defined
+    batch size (required for lstm problems)
+    """
+
+    x1_train, x1_valid, y_train, y_valid = train_test_split(x1, y, test_size=0.2, random_state=2021)
+    x1_train = x1_train[:(len(x1_train) // bs) * bs]
+    x1_valid = x1_valid[:(len(x1_valid) // bs) * bs]
+
+    y_train = y_train[:(len(y_train) // bs) * bs]
+    y_valid = y_valid[:(len(y_valid) // bs) * bs]
+
+    if reshape_y:
+        y_train = y_train.reshape(y_train.shape[0], y_train.shape[1], 1)
+        y_valid = y_valid.reshape(y_valid.shape[0], y_valid.shape[1], 1)
+
+    return x1_train, x1_valid, y_train, y_valid
+
