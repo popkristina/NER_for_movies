@@ -13,7 +13,7 @@ def pad_textual_data(sentences, max_len):
     Accepts a list of tokenized sentences and
     pads each sentence to 'max_len' length.
     """
-    x = [[w[0] for w in s] for s in sentences]
+    x = [[w[1] for w in s] for s in sentences]
 
     new_x = []
     for seq in x:
@@ -60,7 +60,7 @@ def pad_feature_data(sentences, max_len, num_feats):
         sent_ft = list()
         for word in sentence:
             ft = list()
-            for i in range(1, num_feats+1):
+            for i in range(2, num_feats+2):
                 ft.append(word[i])
             sent_ft.append(ft)
         for j in range(len(sentence) - 1, max_len - 1):
@@ -166,7 +166,7 @@ def create_dict(str_list, reverse=False):
     return {st: i for i, st in enumerate(str_list)}
 
 
-def group_sentences(data, category=""):
+def group_sentences(data, sent_identificator, category):
     """
     Accepts the tokenized data with features,
     and creates a list where every element is another
@@ -175,17 +175,15 @@ def group_sentences(data, category=""):
     comprise the sentence.
     """
     all_sents = []
-    sent_ids = data['Sent_id'].unique()
+    sent_ids = data[sent_identificator].unique()
     for curr_id in sent_ids:
-        tmp_df = data[data['Sent_id'] == curr_id]
-        if len(category) > 1:
-            tmp_df = pd.concat([tmp_df['Sent_id'], tmp_df['Token'], tmp_df["Token_index"],
-                                tmp_df.iloc[:, 4:44], tmp_df.iloc[:, 137:147], tmp_df[category]], axis=1)
-        else:
-            tmp_df = pd.concat([tmp_df['Sent_id'], tmp_df['Token'], tmp_df["Token_index"],
-                                tmp_df.iloc[:, 4:44], tmp_df.iloc[:, 137:147]], axis=1)
+        tmp_df = data[data[sent_identificator] == curr_id]
+        tmp_df = pd.concat(
+            [tmp_df['Sent_id'], tmp_df['Token'], tmp_df["Token_index"], tmp_df.iloc[:, 4:44], tmp_df.iloc[:, 137:147],
+             tmp_df[category]], axis=1)
         records = tmp_df.to_records(index=False)
         all_sents.append(records)
+
     return all_sents
 
 
@@ -335,3 +333,17 @@ def create_word_and_tag_list(data):
     tags = list(set(data['BIO'].values))
     n_tags = len(tags)
     return words, n_words, tags, n_tags
+
+
+def from_num_to_class(p, idx2tag):
+    """
+    Turn the predictions from numerical
+    to their class names.
+    """
+    predictions = []
+    for sent in p:
+        sent_categories = []
+        for num in sent:
+            sent_categories.append(idx2tag[str(num)])
+        predictions.append(sent_categories)
+    return predictions

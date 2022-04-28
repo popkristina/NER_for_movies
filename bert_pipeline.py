@@ -3,13 +3,16 @@ import numpy as np
 from tqdm import tqdm, trange
 import string
 import os
+#import matplotlib.pyplot as plt
 from keras.preprocessing.sequence import pad_sequences
 
 from torch import cuda
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
+
+#import transformers
 from transformers import AdamW, get_linear_schedule_with_warmup
 from transformers import BertTokenizer, BertConfig, BertForTokenClassification
-#from transformers import RobertaTokenizer, RobertaForTokenClassification
+from transformers import RobertaTokenizer, RobertaForTokenClassification
 #from transformers import XLMRobertaForTokenClassification, XLMRobertaTokenizer
 #from transformers import FunnelTokenizer, FunnelForTokenClassification
 #from transformers import DebertaTokenizer, DebertaForTokenClassification
@@ -18,10 +21,30 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 from seqeval.metrics import f1_score, accuracy_score
 
-from Scripts.preprocess import *
-from Scripts.feature_extraction import *
-from Scripts.data_manipulation import *
+def read_data():
+    #os.chdir('D:/TU_Graz/Thesis/Datasets/Reddit_features')
+    train = pd.read_csv("../project/data/train_final_all.csv")
+    test = pd.read_csv("../project/data/test_final_all.csv")
+    data = train.append(test)
 
+    return train, test, data
+
+def group_sentences(data, category):
+    all_sents = []
+    sent_ids = data['Sent_id'].unique()
+    for curr_id in sent_ids:
+        tmp_df = data[data['Sent_id'] == curr_id]
+        tmp_df = pd.concat([tmp_df['Token'], tmp_df["Token_index"], tmp_df.iloc[:,4:147], tmp_df[category]], axis = 1)
+        records = tmp_df.to_records(index=False)
+        all_sents.append(records)
+    return all_sents
+
+def remove_sents_over_threshold(sents, threshold):
+    sentences = list()
+    for s in sents:
+        if len(s) < threshold:
+            sentences.append(s)
+    return sentences
 
 def set_processor_params():
     device = 'cuda' if cuda.is_available() else 'cpu'
@@ -35,28 +58,14 @@ def tokenize(sentence, sentence_labels):
     labels = []
     for word, label in zip(sentence, sentence_labels):
         str_word = str(word)
-        tokenized_word = tokenizer.tokenize(str_word)  # Tokenize the word
-        n_subwords = len(tokenized_word)  # Count subwords
-        tokenized_sentence.extend(tokenized_word)  # Add to the final tokenized list
-        labels.extend([label] * n_subwords)  # Add the same label of the original word to all of its subwords
+        tokenized_word = tokenizer.tokenize(str_word) # Tokenize the word
+        n_subwords = len(tokenized_word) # Count subwords
+        tokenized_sentence.extend(tokenized_word) # Add to the final tokenized list
+        labels.extend([label] * n_subwords) # Add the same label of the original word to all of its subwords
     return tokenized_sentence, labels
 
-# def plot_learning_curves():
-#    sns.set(style='darkgrid')
-#    sns.set(font_scale=1.5)
-#    plt.rcParams["figure.figsize"] = (6,6)
-
-#    #plt.plot(loss_values, 'b-o', label="training loss")
-#    #plt.plot(validation_loss_values, 'r-o', label="validation loss")
-#    plt.plot(validation_accuracy_values, 'g-o', label ="validation accuracy")
-#    plt.title("Learning curve")
-#    plt.xlabel("Epoch")
-#    plt.ylabel("Accuracy")
-#    plt.legend()
-#    plt.show()
-
-
-train, test, data = read_preprocessed_data('/home/kpopova/project/data')
+train, test, data = read_data()
+#data_stats(data)
 device = set_processor_params()
 
 tag_values = list(set(train["BIO"].values))
@@ -65,20 +74,23 @@ tag2idx = {t: i for i, t in enumerate(tag_values)}
 idx2tag = {v: k for k, v in tag2idx.items()}
 
 print("prepare sent")
-sents = group(train, 'BIO')
+sents = group_sentences(train, 'BIO')
 sents = remove_sents_over_threshold(sents, 300)
 sentences = [[word[0] for word in sentence] for sentence in sents]
 labels = [[tag2idx[w[len(w)-1]] for w in s] for s in sents]
 
-MAX_LEN = 300
-BATCH_SIZE = 32
-EPOCHS = 7
-LEARNING_RATE = 1e-05
-MAX_GRAD_NORM = 8
-print("tokenize")
-tokenizer = BertTokenizer.from_pretrained("bert-base-multilingual-cased", do_lower_case=False)
-tokenized_texts_and_labels = [tokenize(sentence, sentence_labels) for sentence, sentence_labels in zip(sentences, labels)]
+MAX_LEN = 350
+BATCH_SIZE = 4
+EPOCHS = 15
+LEARNING_RATE = 3e-5
+#LEARNING_RATE = 0.00003
+MAX_GRAD_NORM = 1.0
 
+print("tokenize")
+tokenizer = RobertaTokenizer.from_pretrained("roberta-large", do_lower_case=False)
+
+#tokenizer = BertTokenizer.from_pretrained("bert-base-multilingual-cased", do_lower_case=False)
+tokenized_texts_and_labels = [tokenize(sentence, sentence_labels) for sentence, sentence_labels in zip(sentences, labels)]
 
 tokenized_texts = [token_label_pair[0] for token_label_pair in tokenized_texts_and_labels]
 labels_subwords = [token_label_pair[1] for token_label_pair in tokenized_texts_and_labels]
@@ -91,9 +103,8 @@ input_tags = pad_sequences([[l for l in lab] for lab in labels_subwords], maxlen
                            padding="post", dtype="long", truncating="post")
 attention_masks = [[float(i != 0.0) for i in ii] for ii in input_ids]
 
-# Train and validation split
-tr_inputs, val_inputs, tr_tags, val_tags = train_test_split(input_ids, input_tags, test_size=0.2)
-tr_masks, val_masks, _, _ = train_test_split(attention_masks, input_ids, test_size=0.2)
+tr_inputs, val_inputs, tr_tags, val_tags = train_test_split(input_ids, input_tags, test_size=0.1, random_state=2021)
+tr_masks, val_masks, _, _ = train_test_split(attention_masks, input_ids, test_size=0.1, random_state=2021)
 
 from torch import tensor
 tr_inputs = tensor(tr_inputs)
@@ -111,19 +122,30 @@ valid_sampler = SequentialSampler(valid_data)
 valid_dataloader = DataLoader(valid_data, sampler=valid_sampler, batch_size=BATCH_SIZE)
 
 # Pretrained model params
-model = BertForTokenClassification.from_pretrained("bert-base-multilingual-cased", num_labels = len(tag2idx), output_attentions = False, output_hidden_states=False)
-#model.cuda()  # Pass the model parameters to gpu
+model = RobertaForTokenClassification.from_pretrained("roberta-large", num_labels=len(tag2idx), output_attentions=False, output_hidden_states=False)
 
-# Set optimizer parameters
-param_optimizer = list(model.named_parameters())
-#optimizer_grouped_parameters = [{"params": [p for n, p in param_optimizer]}]
-no_decay = ['bias', 'gamma', 'beta']
-optimizer_grouped_parameters = [
-    {'params': [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)],
-     'weight_decay_rate': 0.01},
-    {'params': [p for n, p in param_optimizer if any(nd in n for nd in no_decay)],
-     'weight_decay_rate': 0.0}]
-optimizer = AdamW(optimizer_grouped_parameters, lr=LEARNING_RATE, eps=1e-8)
+#model = BertForTokenClassification.from_pretrained("bert-base-multilingual-cased", num_labels = len(tag2idx), output_attentions = False, output_hidden_states=False)
+#model.cuda() # Pass the model parameters to gpu
+
+FULL_FINETUNING = False
+if FULL_FINETUNING:
+    param_optimizer = list(model.named_parameters())
+    no_decay = ['bias', 'gamma', 'beta']
+    optimizer_grouped_parameters = [
+        {'params': [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)],
+         'weight_decay_rate': 0.01},
+        {'params': [p for n, p in param_optimizer if any(nd in n for nd in no_decay)],
+         'weight_decay_rate': 0.0}
+    ]
+else:
+    param_optimizer = list(model.classifier.named_parameters())
+    optimizer_grouped_parameters = [{"params": [p for n, p in param_optimizer]}]
+
+optimizer = AdamW(
+    optimizer_grouped_parameters,
+    lr=LEARNING_RATE,
+    eps=1e-8
+)
 
 # Total number of training steps is number of batches * number of epochs.
 total_steps = len(train_dataloader) * EPOCHS
@@ -148,7 +170,7 @@ for i in trange(EPOCHS, desc="Epoch"):
         batch = tuple(t.to(device) for t in batch)  # add batch to gpu
         b_input_ids, b_input_mask, b_labels = batch  # Input ids, mask and labels of the current batch
         model.zero_grad()  # Always clear any previously calculated gradients before performing a backward pass
-        #cuda.empty_cache()
+        # cuda.empty_cache()
         # Forward pass
         # This will return the loss (rather than the model output) because we have provided the `labels`.
         outputs = model(b_input_ids, attention_mask=b_input_mask, labels=b_labels)
@@ -181,10 +203,10 @@ for i in trange(EPOCHS, desc="Epoch"):
     for batch in valid_dataloader:
         batch = tuple(t.to(device) for t in batch)
         b_input_ids, b_input_mask, b_labels = batch
-        #cuda.empty_cache()
+        # cuda.empty_cache()
         # Telling the model not to compute or store gradients, to save memory and speed up validation
         with no_grad():
-            #cuda.empty_cache()
+            cuda.empty_cache()
             # Forward pass, calculate logit predictions
             # This will return the logits rather than the loss because we have not provided labels
             outputs = model(b_input_ids, attention_mask=b_input_mask, labels=b_labels)
@@ -233,8 +255,8 @@ for lab in test_labels:
 
 for test_sentence in test_sentences:
     tokenized_sentence = tokenizer.encode(test_sentence)
+    input_ids = tensor([tokenized_sentence])
     #input_ids = tensor([tokenized_sentence]).cuda()
-    input_ids = tensor([tokenized_sentence]).cuda()
     #input_masks = tensor([[float(i != 0.0) for i in ii] for ii in input_ids]).cuda()
     input_masks = tensor([[float(i != 0.0) for i in ii] for ii in input_ids])
     with no_grad():
@@ -257,16 +279,3 @@ for test_sentence in test_sentences:
 all_preds = [tag2idx[label] for label in all_predictions]
 report = classification_report(all_true_labels, all_preds)
 print(report)
-
-from seqeval.metrics import classification_report
-
-report = classification_report(test_labels_str, all_predictions_list)
-
-print(report)
-
-from sklearn.metrics import confusion_matrix
-
-all_true_labels_bukvi = [idx2tag[tag] for tag in all_true_labels]
-
-for token, pred_label, true_label in zip(test_sentences[27], all_predictions_list[27], test_labels[27]):
-    print("{}\t{}\t{}".format(token, pred_label, idx2tag[true_label]))
