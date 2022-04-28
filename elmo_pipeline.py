@@ -209,7 +209,10 @@ print(classification_report(y_orig, y_preds))
 predictions = from_num_to_class(p, idx2tag)
 
 all_outputs, all_outputs_per_sentence = assemble_predictions(predictions, X1_test, sentences_test, param_dict["max_len"])
+all_outputs_per_sentence_alt = split_keyphrases(all_outputs_per_sentence)
 
-print(all_outputs_per_sentence['5ixah2'])
-with open("sample.json", "w") as outfile:
+with open("all_outputs_per_sentence.json", "w") as outfile:
     json.dump(all_outputs_per_sentence, outfile)
+
+with open("all_outputs_per_sentence_alt.json", "w") as outfile:
+    json.dump(all_outputs_per_sentence_alt, outfile)

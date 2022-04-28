@@ -2,7 +2,6 @@
 def assemble_predictions(predictions, x, sentences, max_len):
     all_outputs = dict()  # Stores all outputs from the test dataset per entity
     all_outputs_per_sentence = dict()  # Stores separate dictionaries per entity for every sentence in the dataset
-
     print(len(predictions))
     for i in range(0, len(predictions)):  # Sentences iteration
         tmp_dict = dict()
@@ -123,3 +122,22 @@ def assemble_predictions(predictions, x, sentences, max_len):
             all_outputs_per_sentence[sentences[i][0][0]] = tmp_dict
 
     return all_outputs, all_outputs_per_sentence
+
+
+def split_keyphrases(dict):
+    for key in dict.keys():
+        if "positive_keywords" in dict[key].keys():
+            tmp_pos_keys = []
+            for keyphrase in dict[key]["positive_keywords"]:
+                keywords = keyphrase.split(" ")
+                tmp_pos_keys.extend(keywords)
+            dict[key]["positive_keywords"] = list(set(tmp_pos_keys))
+        if "negative_keywords" in dict[key].keys():
+            tmp_neg_keys = []
+            for keyphrase in dict[key]["negative_keywords"]:
+                keywords = keyphrase.split(" ")
+                tmp_neg_keys.extend(keywords)
+            dict[key]["negative_keywords"] = list(set(tmp_neg_keys))
+    return dict
+
+
