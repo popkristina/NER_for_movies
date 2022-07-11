@@ -6,7 +6,7 @@ input_submission = 'Please recommend me some movies like: The Fault in Our Stars
                    'or thrillers.'
 
 """
-Option 2: Input dataset
+Option 2: Input datasets
 """
 
 # TODO: Add Input dataset
@@ -22,3 +22,4 @@ sentences, labels, sent_ids = group_sents(tokenized_text)
 # 3. EXTRACT FEATURES FROM TEXT
 if features:
     feats = extract_all_feats(sentences, sent_ids)
+
