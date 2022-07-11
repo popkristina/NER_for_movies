@@ -77,36 +77,11 @@ features = True  # If sat to true, additional extracted features will be used
 train_mode = False
 model_name = "elmo_best"
 
-"""
-Option 1: Input one submission
-"""
-input_submission = 'Please recommend me some movies like: The Fault in Our Stars. I ' \
-                   'like actors like Logan Lerman and Mischa Burton. Please no horrors ' \
-                   'or thrillers.'
 
-"""
-Option 2: Input dataset
-"""
-
-# TODO: Add Input dataset
-
-
-# 1. PREPROCESS AND TOKENIZE INPUT TEXT
-text = replace(input_submission)
-texts = [text]
-tokenized_text = tokenizer(texts)  # Tokenized text is in dataframe format
-
-# 2. GROUP SENTENCES TO GET A LIST OF TOKENS, LABELS AND SENTENCE IDS
-sentences, labels, sent_ids = group_sents(tokenized_text)
-
-# 3. EXTRACT FEATURES FROM TEXT
-if features:
-    feats = extract_all_feats(sentences, sent_ids)
-
-# 4. READ PREPROCESSED TRAIN AND TEST DATA
+# 1. READ PREPROCESSED TRAIN AND TEST DATA
 all_data, train_set, test_set = read_preprocessed_data('/home/kpopova/project/data')
 
-# 5. CREATE SETS OF WORDS AND TAGS (FOR TRAINING)
+# 2. CREATE SETS OF WORDS AND TAGS (FOR TRAINING)
 words, n_words, tags, n_tags = create_word_and_tag_list(all_data)
 
 if train_mode:
@@ -126,7 +101,7 @@ else:
     with open("helper_dicts/i2tg.json") as idx2tag_save:
         idx2tag = json.load(idx2tag_save)
 
-# 7. SENTENCE PREPARATION
+# 3. SENTENCE PREPARATION
 sents = group_sentences(train_set, 'Sent_id', 'BIO')
 sentences = [s for s in sents if len(s) <= param_dict["max_len"]]
 
@@ -137,20 +112,20 @@ X1 = pad_textual_data(sentences, param_dict["max_len"])
 if features:
     X2 = pad_feature_data(sentences, param_dict["max_len"], param_dict["num_features"])
 
-# 8. SPLIT TO TRAIN AND VALIDATION DATA
+# 4. SPLIT TO TRAIN AND VALIDATION DATA
 if features:
     X1_train, X1_valid, X2_train, X2_valid, y_train, y_valid = split_to_fit_batch(X1, y, param_dict["batch_size"], X2)
 else:
     X1_train, X1_valid, y_train, y_valid = split_to_fit_batch(X1, y, param_dict["batch_size"])
 
-# 9. SETUP KERAS SESSION PARAMETERS
+# 5. SETUP KERAS SESSION PARAMETERS
 tf.disable_eager_execution()
 elmo_model = hub.Module("https://tfhub.dev/google/elmo/3", trainable=True)
 sess = tf.Session()
 K.set_session(sess)
 sess.run([tf.global_variables_initializer(), tf.tables_initializer()])
 
-# 10. BUILD AND FIT THE MODEL OR LOAD IF PREV. SAVED
+# 6. BUILD AND FIT THE MODEL OR LOAD IF PREV. SAVED
 if train_mode:
     if features:
         model = build_model(max_len, n_tags)
@@ -183,7 +158,7 @@ else:
     model.load_weights("models/" + model_name + ".h5")
 
 
-# 14. TEST THE MODEL WITH THE TEST SET
+# 7. TEST THE MODEL WITH THE TEST SET
 sents_test = group_sentences(test_set, "Sent_id", "BIO")
 sentences_test = [s for s in sents_test if len(s) <= param_dict["max_len"]]
 
