@@ -78,6 +78,7 @@ train_mode = False
 model_name = "elmo_best"
 
 
+
 # 1. READ PREPROCESSED TRAIN AND TEST DATA
 all_data, train_set, test_set = read_preprocessed_data('/home/kpopova/project/data')
 
@@ -191,3 +192,5 @@ with open("all_outputs_per_sentence.json", "w") as outfile:
 
 with open("all_outputs_per_sentence_alt.json", "w") as outfile:
     json.dump(all_outputs_per_sentence_alt, outfile)
+    
+
