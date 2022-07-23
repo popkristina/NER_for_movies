@@ -347,3 +347,14 @@ def from_num_to_class(p, idx2tag):
             sent_categories.append(idx2tag[str(num)])
         predictions.append(sent_categories)
     return predictions
+
+
+def read_sentences_from_json(json_file):
+    print()
+    # implement
+
+def read_sentences_from_txt(txt_file):
+    print()
+
+def read_sentences_from_obj(obj_file):
+    print()

@@ -77,15 +77,13 @@ def build_model(max_len, n_tags):
     return model
 
 
-"""
-############ 1 READ PREPROCESSED TRAIN AND TEST DATA ################## 
-"""
+"""  ##########################          1 READ PREPROCESSED TRAIN AND TEST DATA           #######################  """
+
 all_data, train_set, test_set = read_preprocessed_data('/home/kpopova/reddit_data_2022_04/')
 
 
-"""
-############ 2 CREATE SETS OF WORDS AND TAGS  ################## 
-"""
+""" #############################       2 CREATE SETS OF WORDS AND TAGS           ################################  """
+
 words, n_words, tags, n_tags = create_word_and_tag_list(all_data)
 
 if new_dicts:
@@ -106,9 +104,8 @@ else:
         idx2tag = json.load(idx2tag_save)
 
 
-"""
-############ 3 SENTENCE PREPARATION  ################## 
-"""
+""" ######################################          3 SENTENCE PREPARATION         ################################ """
+
 sentences = group_sentences(train_set, 'Sent_id', 'BIO')
 for i in range(0, len(sentences)):
     sentences[i] = sentences[i][0:300]
@@ -121,18 +118,16 @@ if features:
     X2 = pad_feature_data(sentences, param_dict["max_len"], param_dict["num_features"])
 
 
-"""
-############ 4 SPLIT TO TRAIN AND VALIDATION DATA  ################## 
-"""
+""" ###############################            4 SPLIT TO TRAIN AND VALIDATION DATA      #########################  """
+
 if features:
     X1_train, X1_valid, X2_train, X2_valid, y_train, y_valid = split_to_fit_batch(X1, y, param_dict["batch_size"], X2)
 else:
     X1_train, X1_valid, y_train, y_valid = split_to_fit_batch(X1, y, param_dict["batch_size"])
 
 
-"""
-############ 5 SETUP KERAS SESSION PARAMETERS ################## 
-"""
+""" ###################################       5 SETUP KERAS SESSION PARAMETERS         ############################ """
+
 tf.disable_eager_execution()
 elmo_model = hub.Module("https://tfhub.dev/google/elmo/3", trainable=True)
 sess = tf.Session()
@@ -140,9 +135,8 @@ K.set_session(sess)
 sess.run([tf.global_variables_initializer(), tf.tables_initializer()])
 
 
-"""
-############ 6 BUILD AND FIT THE MODEL OR LOAD IF PREV. SAVED ################## 
-"""
+""" ############################       6 BUILD AND FIT THE MODEL OR LOAD IF PREV. SAVED      #######################"""
+
 if features:
     model = build_model(param_dict["max_len"], n_tags)
 else:
@@ -155,6 +149,7 @@ if features:
     model, history = train_with_features(X1_train, X2_train, X1_valid, X2_valid, y_train, y_valid, param_dict, model)
 else:
     model, history = train(X1_train, X1_valid, y_train, y_valid, param_dict, model)
+
 
 print("Saving model")
 model_json = model.to_json()

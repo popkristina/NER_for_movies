@@ -40,6 +40,7 @@ def tokenizer(submissions):
     curr_id = []
     id = 0
     for submission in submissions:
+
         # forms tokens out of alphabetic sequences, money expressions,
         # and any other non-whitespace sequences
         tokens = regexp_tokenize(submission, pattern='\w+|\$[\d\.]+|\S+')
