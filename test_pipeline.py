@@ -76,7 +76,7 @@ else:
 
 if test_1 or test_2:
 
-    # load json and create model
+    # Load json and create model
     json_file = open("models/" + model_name + ".json", "r")
     loaded_model_json = json_file.read()
     json_file.close()
