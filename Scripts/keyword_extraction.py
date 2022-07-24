@@ -1,29 +1,46 @@
-import rake
 import pandas as pd
 import spacy
 import pytextrank
+import nltk
+import json
+from rake_nltk import Rake
 
-algorithm = 'rake' # rake or textrank
-path = './data/'
-submissions = pd.read_csv(path + 'submissions.csv')
+nlp = spacy.load("en_core_web_sm")
+nlp.add_pipe("textrank")
+
+algorithm = 'textrank' # rake or textrank
+path = '../data/'
+submissions = pd.read_csv(path + 'test_submissions_simplified.csv')
 
 
 def rake(sentences):
-    keyphrases = []
+    keyphrases = dict()
     r = Rake()
-    for text in sentences:
-        r.extract_keywords_from_text(text)
-        keyphrases.append(r.get_ranked_phrases())
+    for index, row in sentences.iterrows():
+        r.extract_keywords_from_text(row['text'])
+        if row['id'] not in keyphrases.keys():
+            keyphrases[row['id']] = list()
+        keyphrases[row['id']].append(r.get_ranked_phrases())
     return keyphrases
 
-def textrank(sentences):
-    en_nlp = spacy.load("en_core_web_sm")
-    en_nlp.add_pipe("textrank")
-    doc = en_nlp(document)
 
-    print()
+def textrank(sentences):
+    keyphrases = dict()
+    for index, row in sentences.iterrows():
+        doc = en_nlp(row['text'])
+        if row['id'] not in keyphrases.keys():
+            keyphrases = list()
+        phrases = [phrase.text for phrase in doc._.phrases]
+        print(phrases)
+        keyphrases.extend(phrases)
+    return keyphrases
+
 
 if algorithm == 'rake':
-    rake()
+    keyphrases = rake(submissions)
+    with open("../predictions/" + "rake_keywords_format_1.json", "w") as outfile:
+        json.dump(keyphrases, outfile)
 else:
-    textrank()
+    keyphrases = textrank(submissions)
+
+print(len(keyphrases))

@@ -5,7 +5,7 @@ from difflib import SequenceMatcher
 from Scripts.assemble import *
 from Scripts.data_manipulation import *
 
-name = 'bert_multilingual_cased_best'
+name = 'bert_large_cased_best'
 
 # Load predictions in original format, as per outputted from model
 with open("predictions/" + name + "_umatched_format_1.json") as json_file:
