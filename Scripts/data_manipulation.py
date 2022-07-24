@@ -283,7 +283,6 @@ def split_to_fit_batch(x1, y, bs, x2="", reshape_y=True):
     that it is divisible with the defined
     batch size (required for lstm problems)
     """
-
     x1_train, x1_valid, y_train, y_valid = train_test_split(x1, y, test_size=0.2, random_state=2021)
     x1_train = x1_train[:(len(x1_train) // bs) * bs]
     x1_valid = x1_valid[:(len(x1_valid) // bs) * bs]
@@ -348,13 +347,3 @@ def from_num_to_class(p, idx2tag):
         predictions.append(sent_categories)
     return predictions
 
-
-def read_sentences_from_json(json_file):
-    print()
-    # implement
-
-def read_sentences_from_txt(txt_file):
-    print()
-
-def read_sentences_from_obj(obj_file):
-    print()
