@@ -5,10 +5,10 @@ from difflib import SequenceMatcher
 from Scripts.assemble import *
 from Scripts.data_manipulation import *
 
-name = 'elmo_best'
+name = 'bert_multilingual_cased_best'
 
 # Load predictions in original format, as per outputted from model
-with open("predictions/" + name + "_unmatched_alt_format_1.json") as json_file:
+with open("predictions/" + name + "_umatched_format_1.json") as json_file:
     all_predictions = json.load(json_file)
 
 # Fix some predictions
