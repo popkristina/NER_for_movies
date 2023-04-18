@@ -1,7 +1,7 @@
 import pandas as pd
+import nltk
 from nltk.corpus import stopwords
 from nltk.sentiment import SentimentIntensityAnalyzer
-import spacy
 from sklearn.feature_extraction.text import TfidfVectorizer
 import en_core_web_sm
 from nltk import FreqDist

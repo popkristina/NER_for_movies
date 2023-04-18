@@ -1,10 +1,9 @@
 import pandas as pd
-import string
 import re
 from nltk.tokenize import regexp_tokenize
 from nltk import pos_tag
 from nltk import RegexpParser
-from nltk.chunk import conlltags2tree, tree2conlltags
+from nltk.chunk import tree2conlltags
 
 
 def replace(text):
@@ -79,4 +78,20 @@ def tokenizer(submissions):
 
     final_data = pd.DataFrame(t)
     return final_data
+
+
+def tokenizer_sentence(submission, id):
+    """
+    Accepts a string and id, its tokens,
+    corresponding pos tags and chunk tags.
+    """
+    tokens = regexp_tokenize(
+        submission,
+        pattern="\w+|\$[\d\.]+|\S+")
+    curr_id = [id] * len(tokens)
+    df = {
+        'sent_id': pd.Series(curr_id),
+        'Words': pd.Series(tokens)
+    }
+    return pd.DataFrame(df)
 
