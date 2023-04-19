@@ -28,14 +28,15 @@ def spacy_feats_sentence(index, sentence, sent_id):
               X.n_rights, X.is_sent_start, X.has_vector, X.ent_kb_id, X.ent_id, X.lower,
               X.prefix, X.suffix, X.idx, X.cluster, len(X)]])
 
-    data.columns = ['Sent_id', 'Sentence', 'Token_index', 'Token', 'POS_tag', 'POS_universal',
-                    'NER_tag', 'NER_iob', 'lemma', 'norm', 'shape', 'lex_id', 'is_digit',
-                    'is_ascii', 'is_alpha', 'is_punct', 'is_left_punct', 'is_right_punct',
-                    'rank', 'is_bracket', 'is_space', 'is_quote', 'is_currency', 'stopword',
-                    'dependency', 'language', 'log_prob', 'sent', 'is_lower', 'is_upper',
-                    'like_num', 'out_of_vocab', 'num_lefts', 'num_rights', 'sent_start',
-                    'has_vector', 'knowledge_base', 'id_entity', 'lower', 'prefix', 'suffix',
-                    'chr_offset', 'brown_cluster', 'num_chars']
+    data.columns = [
+        'Sent_id', 'Sentence', 'Token_index', 'Token', 'POS_tag', 'POS_universal',
+        'NER_tag', 'NER_iob', 'lemma', 'norm', 'shape', 'lex_id', 'is_digit',
+        'is_ascii', 'is_alpha', 'is_punct', 'is_left_punct', 'is_right_punct',
+        'rank', 'is_bracket', 'is_space', 'is_quote', 'is_currency', 'stopword',
+        'dependency', 'language', 'log_prob', 'sent', 'is_lower', 'is_upper',
+        'like_num', 'out_of_vocab', 'num_lefts', 'num_rights', 'sent_start',
+        'has_vector', 'knowledge_base', 'id_entity', 'lower', 'prefix', 'suffix',
+        'chr_offset', 'brown_cluster', 'num_chars']
     return data
 
 
@@ -49,13 +50,14 @@ def spacy_feats_all(sentences, sent_ids):
     for i in range(0, len(sentences)):
         tmp_df = spacy_feats_sentence(i, sentences[i], sent_ids[i])
         data = data.append([tmp_df])
-    data.columns = ['Sent_id', 'Sentence', 'Token_index', 'Token', 'POS_tag', 'POS_universal', 'NER_tag',
-                    'NER_iob', 'lemma', 'norm', 'shape', 'lex_id', 'is_digit', 'is_ascii', 'is_alpha',
-                    'is_punct', 'is_left_punct', 'is_right_punct', 'rank', 'is_bracket', 'is_space',
-                    'is_quote', 'is_currency', 'stopword', 'dependency', 'language', 'log_prob', 'sent',
-                    'is_lower', 'is_upper', 'like_num', 'out_of_vocab', 'num_lefts', 'num_rights',
-                    'sent_start', 'has_vector', 'knowledge_base', 'id_entity', 'lower', 'prefix',
-                    'suffix', 'chr_offset', 'brown_cluster', 'num_chars']
+    data.columns = [
+        'Sent_id', 'Sentence', 'Token_index', 'Token', 'POS_tag', 'POS_universal', 'NER_tag',
+        'NER_iob', 'lemma', 'norm', 'shape', 'lex_id', 'is_digit', 'is_ascii', 'is_alpha',
+        'is_punct', 'is_left_punct', 'is_right_punct', 'rank', 'is_bracket', 'is_space',
+        'is_quote', 'is_currency', 'stopword', 'dependency', 'language', 'log_prob', 'sent',
+        'is_lower', 'is_upper', 'like_num', 'out_of_vocab', 'num_lefts', 'num_rights',
+        'sent_start', 'has_vector', 'knowledge_base', 'id_entity', 'lower', 'prefix',
+        'suffix', 'chr_offset', 'brown_cluster', 'num_chars']
 
     return data
 
@@ -223,7 +225,8 @@ def tf_ngrams(ngrams, words):
 def tf_ngrams_all(sentences, df_subset, ngrams):
     feats = pd.DataFrame()
     for i in range(0, len(sentences)):
-        words_curr_sent = df_subset[df_subset["Sentence"] == "Sentence " + str(i)]["Token"]
+        words_curr_sent = df_subset[
+            df_subset["Sentence"] == "Sentence " + str(i)]["Token"]
         ngram_feats = tf_ngrams(ngrams, words_curr_sent)
         feats = feats.append([ngram_feats])
     names = [str(ngram) + "_is_predecessor" for ngram in ngrams]
@@ -234,7 +237,7 @@ def tf_ngrams_all(sentences, df_subset, ngrams):
 def extract_all_feats(sentences, sent_ids):
     """
     Accepts a set of tokenized sentences
-    and returns all of the features that
+    and returns all the features that
     can be extracted from every token.
     The corresponding functions for every
     feature type are described within the
