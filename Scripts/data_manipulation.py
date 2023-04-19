@@ -1,8 +1,6 @@
 from keras.preprocessing.sequence import pad_sequences
 import pandas as pd
 import numpy as np
-from collections import Counter
-import string
 from difflib import SequenceMatcher
 from sklearn.model_selection import train_test_split
 import json
@@ -115,7 +113,7 @@ def similarity(string1, string2):
     return SequenceMatcher(None, string1, string2).ratio()
 
 
-def split_based_on_id(data):
+def split_based_on_id(data, test_set_ids_list):
     """
     Splits a dataset of submissions to train and test sets
     based on a previously defined set of submission ids that
@@ -235,8 +233,11 @@ def group(data, category):
     sent_ids = data['Sent_id'].unique()
     for curr_id in sent_ids:
         tmp_df = data[data['Sent_id'] == curr_id]
-        tmp_df = pd.concat([tmp_df['Token'], tmp_df["Token_index"], tmp_df.iloc[:, 4:44],
-                            tmp_df.iloc[:, 137:147], tmp_df[category]], axis=1)
+        tmp_df = pd.concat([
+            tmp_df['Token'],
+            tmp_df["Token_index"],
+            tmp_df.iloc[:, 4:44],
+            tmp_df.iloc[:, 137:147], tmp_df[category]], axis=1)
         records = tmp_df.to_records(index=False)
         all_sents.append(records)
     return all_sents
@@ -347,3 +348,18 @@ def from_num_to_class(p, idx2tag):
         predictions.append(sent_categories)
     return predictions
 
+
+def flatten_predictions(predictions):
+    """
+    The labels of the sentences are usually
+    returned per sentence in the form:
+    [pred1, pred2,...],[pred1, pred2,...]
+    For easier statistical evaluation,
+    they are flattened to one list:
+    [pred1, pred2, pred3,..]
+    """
+    flatten_preds = []
+    for sentence in predictions:
+        for tag in sentence:
+            flatten_preds.append(tag)
+    return flatten_preds
