@@ -1,1 +1,20 @@
-{"I-movie-neg": 0, "I-keyword-neg": 1, "I-keyword-pos": 2, "B-actor-neg": 3, "I-gen-pos": 4, "B-keyword-neg": 5, "B-gen-neg": 6, "B-movie-neg": 7, "B-keyword-pos": 8, "I-actor-neg": 9, "B-gen-pos": 10, "I-gen-neg": 11, "I-actor-pos": 12, "B-movie-pos": 13, "B-actor-pos": 14, "I-movie-pos": 15, "O": 16}
+{
+  "B-keyword-neg": 0,
+  "B-keyword-pos": 1,
+  "I-actor-pos": 2,
+  "I-gen-pos": 3,
+  "I-keyword-neg": 4,
+  "B-movie-neg": 5,
+  "B-actor-neg": 6,
+  "B-movie-pos": 7,
+  "B-gen-neg": 8,
+  "I-movie-pos": 9,
+  "I-actor-neg": 10,
+  "I-gen-neg": 11,
+  "O": 12,
+  "I-keyword-pos": 13,
+  "B-actor-pos": 14,
+  "I-movie-neg": 15,
+  "B-gen-pos": 16,
+  "PAD":  17
+}
