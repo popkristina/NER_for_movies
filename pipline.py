@@ -4,18 +4,15 @@ import numpy as np
 import os
 import json
 
+import torch
+
 # import tensorflow.compat.v1 as tf
 # import tensorflow_hub as hub
 # from tensorflow.keras.utils import to_categorical, plot_model
 # from tensorflow.compat.v1.keras import backend as K
 
-# from keras.models import Model, Input
-# from keras.layers import Concatenate, LSTM, TimeDistributed, Dense, \
-#     BatchNormalization, Bidirectional, Lambda
-
 from Scripts.preprocess import *
-from Scripts.feature_extraction import *
-from Scripts.plotting_functions import *
+from transformers import BertConfig, BertModel
 # from Scripts.data_manipulation import *
 from Scripts.evaluate import *
 # from Scripts.train_models import *
@@ -55,6 +52,11 @@ for text, id in zip(texts.text, texts.id):
 
 # Extract features from text(s)
 # TODO: Removed from inference pipeline -> results unsatisfactory
+
+# Load models
+bert_large_cased = torch.load("models/bert_base_multilingual_cased", map_location=torch.device('cpu'))
+bert_base_mult = torch.load("models/bert_base_multilingual_cased", map_location=torch.device('cpu'))
+roberta = torch.load("models/roberta", map_location=torch.device('cpu'))
 
 # Annotate text(s)
 
