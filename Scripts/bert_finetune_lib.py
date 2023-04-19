@@ -1,3 +1,7 @@
+"""
+Script not completed or tested
+"""
+
 import transformers
 from transformers import AdamW, get_linear_schedule_with_warmup
 from transformers import BertTokenizer, BertConfig, BertForTokenClassification
