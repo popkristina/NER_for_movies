@@ -21,6 +21,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 from seqeval.metrics import f1_score, accuracy_score
 
+
 def read_data():
     #os.chdir('D:/TU_Graz/Thesis/Datasets/Reddit_features')
     train = pd.read_csv("../project/data/train_final_all.csv")
@@ -28,6 +29,7 @@ def read_data():
     data = train.append(test)
 
     return train, test, data
+
 
 def group_sentences(data, category):
     all_sents = []
@@ -39,12 +41,14 @@ def group_sentences(data, category):
         all_sents.append(records)
     return all_sents
 
+
 def remove_sents_over_threshold(sents, threshold):
     sentences = list()
     for s in sents:
         if len(s) < threshold:
             sentences.append(s)
     return sentences
+
 
 def set_processor_params():
     device = 'cuda' if cuda.is_available() else 'cpu'
