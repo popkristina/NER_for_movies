@@ -7,6 +7,7 @@ import json
 import torch
 from transformers import BertTokenizer, RobertaTokenizer
 # import tensorflow.compat.v1 as tf
+#import tensorflow as tf
 # import tensorflow_hub as hub
 # from tensorflow.keras.utils import to_categorical, plot_model
 # from tensorflow.compat.v1.keras import backend as K
@@ -42,6 +43,13 @@ def generate_predictions(grouped_submissions, model, tokenizer):
         all_predictions_list.append(new_labels)
     return all_predictions_list
 
+
+def generate_predictions_1(grouped_submissions, model):
+    all_predictions_list = []
+
+
+
+    return all_predictions_list
 
 # Insert text(s)
 # TODO: Fix input type
@@ -98,7 +106,7 @@ for text, id in zip(texts.text, texts.id):
 # TODO: Removed from inference pipeline -> results unsatisfactory
 
 #################################################################################################
-# Load models
+# Load BERT models
 bert_large_cased = BertForTokenClassification.from_pretrained("models/bert-large-cased/")
 bert_base_mult = BertForTokenClassification.from_pretrained("models/bert-base-multilingual-cased/")
 roberta = RobertaForTokenClassification.from_pretrained("models/roberta-large/")
@@ -107,6 +115,15 @@ roberta = RobertaForTokenClassification.from_pretrained("models/roberta-large/")
 tokenizer_bert_large = BertTokenizer.from_pretrained('bert-large-cased', do_lower_case=False)
 tokenizer_bert_mult = BertTokenizer.from_pretrained('bert-base-multilingual-cased', do_lower_case=False)
 tokenizer_roberta = RobertaTokenizer.from_pretrained('roberta-large', do_lower_case=False)
+
+# Load ELMO model
+json_file = open("models/elmo_best.json", "r")
+loaded_model_json = json_file.read()
+json_file.close()
+#bilstm_elmo = tf.keras.models.model_from_json(loaded_model_json)
+#model.compile(optimizer=param_dict["optimizer"], loss=param_dict["loss"], metrics=param_dict["metrics"])
+#model.summary()
+#model.load_weights("models/" + model_name + ".h5")
 
 # Prepare submissions for inference
 grouped = group_sents_nolabels(tokenized_texts)
@@ -130,5 +147,6 @@ _, assembled_predictions_bert_mult = assemble_predictions(
 
 
 # Assemble predictions from text(s)
-
+ensemble_predictions = ensemble_appr(assembled_predictions_roberta, assembled_predictions_bert_lg_cased, assembled_predictions_bert_mult, [])
+print(ensemble_predictions)
 
