@@ -31,7 +31,7 @@ def generate_predictions(grouped_submissions, model, tokenizer):
         label_indices = label_indices[0]
         label_indices = label_indices[1:-1]
 
-        tokens = tokenizer_roberta.convert_ids_to_tokens(input_ids.to('cpu').numpy()[0])
+        tokens = tokenizer.convert_ids_to_tokens(input_ids.to('cpu').numpy()[0])
         new_tokens, new_labels = [], []
         for token, label_idx in zip(tokens, label_indices):
             if token.startswith("##"):
@@ -39,9 +39,7 @@ def generate_predictions(grouped_submissions, model, tokenizer):
             else:
                 new_labels.append(tag_values[label_idx])
                 new_tokens.append(token)
-
         all_predictions_list.append(new_labels)
-
     return all_predictions_list
 
 
@@ -118,22 +116,17 @@ grouped_submissions = [[word[1] for word in sub] for sub in grouped]
 predictions_roberta = generate_predictions(
     grouped_submissions, roberta, tokenizer_roberta)
 _, assembled_predictions_roberta = assemble_predictions(
-    predictions_roberta, grouped_submissions, grouped, 300)
+    predictions_roberta, grouped_submissions, grouped)
 
 predictions_bert_large_cased = generate_predictions(
     grouped_submissions, bert_large_cased, tokenizer_bert_large)
 _, assembled_predictions_bert_lg_cased = assemble_predictions(
-    predictions_bert_large_cased, grouped_submissions, grouped, 300)
+    predictions_bert_large_cased, grouped_submissions, grouped)
 
 predictions_bert_mult = generate_predictions(
     grouped_submissions, bert_base_mult, tokenizer_bert_mult)
 _, assembled_predictions_bert_mult = assemble_predictions(
-    predictions_bert_mult, grouped_submissions, grouped, 300
-)
-
-# Bert large cased labels
-
-# Annotate text(s)
+    predictions_bert_mult, grouped_submissions, grouped)
 
 
 # Assemble predictions from text(s)
