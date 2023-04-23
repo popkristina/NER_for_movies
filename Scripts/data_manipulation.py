@@ -1,4 +1,4 @@
-from keras.preprocessing.sequence import pad_sequences
+from keras_preprocessing.sequence import pad_sequences
 import pandas as pd
 import numpy as np
 from difflib import SequenceMatcher
@@ -185,16 +185,21 @@ def group_sentences(data, sent_identificator, category):
     return all_sents
 
 
-def group_sents(submissions_tokenized):
+def group_sents_nolabels(data):
     """
-    Groups tokenized sentences in a list-of-lists form
-    with a Sentence Getter object.
+
     """
-    getter = SentenceGetter(submissions_tokenized)
-    sentences = [[word[0] for word in sentence] for sentence in getter.sentences]
-    labels = [[s[1] for s in sentence] for sentence in getter.sentences]
-    sent_ids = [[s_id[3] for s_id in sentence] for sentence in getter.sentences]
-    return sentences, labels, sent_ids
+    all_sents = []
+    sent_ids = data['sent_id'].unique()
+    for curr_id in sent_ids:
+        tmp_df = data[data['sent_id'] == curr_id]
+        tmp_df = pd.concat(
+            [tmp_df['sent_id'],
+             tmp_df['Words']], axis=1)
+        records = tmp_df.to_records(index=False)
+        records = records[0:300]
+        all_sents.append(records)
+    return all_sents
 
 
 class SentenceGetter(object):
