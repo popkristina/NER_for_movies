@@ -5,10 +5,9 @@ def similar(a, b):
     return SequenceMatcher(None, a, b).ratio()
 
 
-def assemble_predictions(predictions, x, sentences, max_len):
+def assemble_predictions(predictions, x, sentences):
     all_outputs = dict()  # Stores all outputs from the test dataset per entity
     all_outputs_per_sentence = dict()  # Stores separate dictionaries per entity for every sentence in the dataset
-    print(len(predictions))
     for i in range(0, len(predictions)):  # Sentences iteration
         tmp_dict = dict()
         for j in range(0, len(predictions[i]) - 2):  # Word iteration
@@ -19,7 +18,7 @@ def assemble_predictions(predictions, x, sentences, max_len):
                     tmp_dict['positive_movies'] = []
                 tmp_entity = x[i][j]
                 k = j + 1
-                while predictions[i][k] == 'I-movie-pos' and k < max_len - 1:
+                while predictions[i][k] == 'I-movie-pos' and k < len(predictions[i]) - 1:
                     tmp_entity += ' ' + x[i][k]
                     k += 1
                 all_outputs['positive_movies'].append(tmp_entity)
@@ -75,7 +74,7 @@ def assemble_predictions(predictions, x, sentences, max_len):
                     tmp_dict['positive_actors'] = []
                 tmp_entity = x[i][j]
                 k = j + 1
-                while predictions[i][k] == 'I-actor-pos':
+                while predictions[i][k] == 'I-actor-pos' and k < len(predictions[i]) - 1:
                     tmp_entity += ' ' + x[i][k]
                     k += 1
                 all_outputs['positive_actors'].append(tmp_entity)
