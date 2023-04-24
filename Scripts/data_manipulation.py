@@ -2,7 +2,6 @@ from keras_preprocessing.sequence import pad_sequences
 import pandas as pd
 import numpy as np
 from difflib import SequenceMatcher
-from sklearn.model_selection import train_test_split
 import json
 
 
@@ -11,7 +10,8 @@ def pad_textual_data(sentences, max_len):
     Accepts a list of tokenized sentences and
     pads each sentence to 'max_len' length.
     """
-    x = [[w[1] for w in s] for s in sentences]
+    x = sentences
+    # x = [[w[1] for w in s] for s in sentences]
 
     new_x = []
     for seq in x:
