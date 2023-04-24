@@ -5,123 +5,131 @@ def similar(a, b):
     return SequenceMatcher(None, a, b).ratio()
 
 
-def assemble_predictions(predictions, x, sentences):
+def assemble_predictions(predictions, x, sentences, name):
     all_outputs = dict()  # Stores all outputs from the test dataset per entity
     all_outputs_per_sentence = dict()  # Stores separate dictionaries per entity for every sentence in the dataset
     for i in range(0, len(predictions)):  # Sentences iteration
         tmp_dict = dict()
         for j in range(0, len(predictions[i]) - 2):  # Word iteration
             if predictions[i][j] == 'B-movie-pos':
-                if 'positive_movies' not in all_outputs.keys():
-                    all_outputs['positive_movies'] = []
-                if 'positive_movies' not in tmp_dict.keys():
-                    tmp_dict['positive_movies'] = []
-                tmp_entity = x[i][j]
-                k = j + 1
-                while predictions[i][k] == 'I-movie-pos' and k < len(predictions[i]) - 1:
-                    tmp_entity += ' ' + x[i][k]
-                    k += 1
-                all_outputs['positive_movies'].append(tmp_entity)
-                if tmp_entity not in tmp_dict['positive_movies']:
-                    tmp_dict['positive_movies'].append(tmp_entity)
+                if name == 'elmo':
+                    if 'positive_movies' not in all_outputs.keys():
+                        all_outputs['positive_movies'] = []
+                    if 'positive_movies' not in tmp_dict.keys():
+                        tmp_dict['positive_movies'] = []
+                    tmp_entity = x[i][j]
+                    k = j + 1
+                    while predictions[i][k] == 'I-movie-pos' and k < len(predictions[i]) - 1:
+                        tmp_entity += ' ' + x[i][k]
+                        k += 1
+                    all_outputs['positive_movies'].append(tmp_entity)
+                    if tmp_entity not in tmp_dict['positive_movies']:
+                        tmp_dict['positive_movies'].append(tmp_entity)
 
             if predictions[i][j] == 'B-movie-neg':
-                if 'negative_movies' not in all_outputs.keys():
-                    all_outputs['negative_movies'] = []
-                if 'negative_movies' not in tmp_dict.keys():
-                    tmp_dict['negative_movies'] = []
-                tmp_entity = x[i][j]
-                k = j + 1
-                while predictions[i][k] == 'I-movie-neg':
-                    tmp_entity += ' ' + x[i][k]
-                    k += 1
-                all_outputs['negative_movies'].append(tmp_entity)
-                if tmp_entity not in tmp_dict['negative_movies']:
-                    tmp_dict['negative_movies'].append(tmp_entity)
+                if name == 'roberta':
+                    if 'negative_movies' not in all_outputs.keys():
+                        all_outputs['negative_movies'] = []
+                    if 'negative_movies' not in tmp_dict.keys():
+                        tmp_dict['negative_movies'] = []
+                    tmp_entity = x[i][j]
+                    k = j + 1
+                    while predictions[i][k] == 'I-movie-neg':
+                        tmp_entity += ' ' + x[i][k]
+                        k += 1
+                    all_outputs['negative_movies'].append(tmp_entity)
+                    if tmp_entity not in tmp_dict['negative_movies']:
+                        tmp_dict['negative_movies'].append(tmp_entity)
 
             if predictions[i][j] == 'B-keyword-pos':
-                if 'positive_keywords' not in all_outputs.keys():
-                    all_outputs['positive_keywords'] = []
-                if 'positive_keywords' not in tmp_dict.keys():
-                    tmp_dict['positive_keywords'] = []
-                tmp_entity = x[i][j]
-                k = j + 1
-                while predictions[i][k] == 'I-keyword-pos':
-                    tmp_entity += ' ' + x[i][k]
-                    k += 1
-                all_outputs['positive_keywords'].append(tmp_entity)
-                if tmp_entity not in tmp_dict['positive_keywords']:
-                    tmp_dict['positive_keywords'].append(tmp_entity)
+                if name == 'elmo':
+                    if 'positive_keywords' not in all_outputs.keys():
+                        all_outputs['positive_keywords'] = []
+                    if 'positive_keywords' not in tmp_dict.keys():
+                        tmp_dict['positive_keywords'] = []
+                    tmp_entity = x[i][j]
+                    k = j + 1
+                    while predictions[i][k] == 'I-keyword-pos':
+                        tmp_entity += ' ' + x[i][k]
+                        k += 1
+                    all_outputs['positive_keywords'].append(tmp_entity)
+                    if tmp_entity not in tmp_dict['positive_keywords']:
+                        tmp_dict['positive_keywords'].append(tmp_entity)
 
             if predictions[i][j] == 'B-keyword-neg':
-                if 'negative_keywords' not in all_outputs.keys():
-                    all_outputs['negative_keywords'] = []
-                if 'negative_keywords' not in tmp_dict.keys():
-                    tmp_dict['negative_keywords'] = []
-                tmp_entity = x[i][j]
-                k = j + 1
-                while predictions[i][k] == 'I-keyword-neg':
-                    tmp_entity += ' ' + x[i][k]
-                    k += 1
-                all_outputs['negative_keywords'].append(tmp_entity)
-                if tmp_entity not in tmp_dict['negative_keywords']:
-                    tmp_dict['negative_keywords'].append(tmp_entity)
+                if name == 'roberta':
+                    if 'negative_keywords' not in all_outputs.keys():
+                        all_outputs['negative_keywords'] = []
+                    if 'negative_keywords' not in tmp_dict.keys():
+                        tmp_dict['negative_keywords'] = []
+                    tmp_entity = x[i][j]
+                    k = j + 1
+                    while predictions[i][k] == 'I-keyword-neg':
+                        tmp_entity += ' ' + x[i][k]
+                        k += 1
+                    all_outputs['negative_keywords'].append(tmp_entity)
+                    if tmp_entity not in tmp_dict['negative_keywords']:
+                        tmp_dict['negative_keywords'].append(tmp_entity)
 
             if predictions[i][j] == 'B-actor-pos':
-                if 'positive_actors' not in all_outputs.keys():
-                    all_outputs['positive_actors'] = []
-                if 'positive_actors' not in tmp_dict.keys():
-                    tmp_dict['positive_actors'] = []
-                tmp_entity = x[i][j]
-                k = j + 1
-                while predictions[i][k] == 'I-actor-pos' and k < len(predictions[i]) - 1:
-                    tmp_entity += ' ' + x[i][k]
-                    k += 1
-                all_outputs['positive_actors'].append(tmp_entity)
-                if tmp_entity not in tmp_dict['positive_actors']:
-                    tmp_dict['positive_actors'].append(tmp_entity)
+                if name == 'bert_mult':
+                    if 'positive_actors' not in all_outputs.keys():
+                        all_outputs['positive_actors'] = []
+                    if 'positive_actors' not in tmp_dict.keys():
+                        tmp_dict['positive_actors'] = []
+                    tmp_entity = x[i][j]
+                    k = j + 1
+                    while predictions[i][k] == 'I-actor-pos' and k < len(predictions[i]) - 1:
+                        tmp_entity += ' ' + x[i][k]
+                        k += 1
+                    all_outputs['positive_actors'].append(tmp_entity)
+                    if tmp_entity not in tmp_dict['positive_actors']:
+                        tmp_dict['positive_actors'].append(tmp_entity)
 
             if predictions[i][j] == 'B-actor-neg':
-                if 'negative_actors' not in all_outputs.keys():
-                    all_outputs['negative_actors'] = []
-                if 'negative_actors' not in tmp_dict.keys():
-                    tmp_dict['negative_actors'] = []
-                tmp_entity = x[i][j]
-                k = j + 1
-                while predictions[i][k] == 'I-actor-neg':
-                    tmp_entity += ' ' + x[i][k]
-                    k += 1
-                all_outputs['negative_actors'].append(tmp_entity)
-                if tmp_entity not in tmp_dict['negative_actors']:
-                    tmp_dict['negative_actors'].append(tmp_entity)
+                if name == 'roberta':
+                    if 'negative_actors' not in all_outputs.keys():
+                        all_outputs['negative_actors'] = []
+                    if 'negative_actors' not in tmp_dict.keys():
+                        tmp_dict['negative_actors'] = []
+                    tmp_entity = x[i][j]
+                    k = j + 1
+                    while predictions[i][k] == 'I-actor-neg':
+                        tmp_entity += ' ' + x[i][k]
+                        k += 1
+                    all_outputs['negative_actors'].append(tmp_entity)
+                    if tmp_entity not in tmp_dict['negative_actors']:
+                        tmp_dict['negative_actors'].append(tmp_entity)
 
             if predictions[i][j] == 'B-gen-pos':
-                if 'positive_genres' not in all_outputs.keys():
-                    all_outputs['positive_genres'] = []
-                if 'positive_genres' not in tmp_dict.keys():
-                    tmp_dict['positive_genres'] = []
-                tmp_entity = x[i][j]
-                k = j + 1
-                while predictions[i][k] == 'I-gen-pos':
-                    tmp_entity += ' ' + x[i][k]
-                    k += 1
-                all_outputs['positive_genres'].append(tmp_entity)
-                if tmp_entity not in tmp_dict['positive_genres']:
-                    tmp_dict['positive_genres'].append(tmp_entity)
+                if name == 'elmo':
+                    if 'positive_genres' not in all_outputs.keys():
+                        all_outputs['positive_genres'] = []
+                    if 'positive_genres' not in tmp_dict.keys():
+                        tmp_dict['positive_genres'] = []
+                    tmp_entity = x[i][j]
+                    k = j + 1
+                    while predictions[i][k] == 'I-gen-pos':
+                        tmp_entity += ' ' + x[i][k]
+                        k += 1
+                    all_outputs['positive_genres'].append(tmp_entity)
+                    if tmp_entity not in tmp_dict['positive_genres']:
+                        tmp_dict['positive_genres'].append(tmp_entity)
 
             if predictions[i][j] == 'B-gen-neg':
-                if 'negative_genres' not in all_outputs.keys():
-                    all_outputs['negative_genres'] = []
-                if 'negative_genres' not in tmp_dict.keys():
-                    tmp_dict['negative_genres'] = []
-                tmp_entity = x[i][j]
-                k = j + 1
-                while predictions[i][k] == 'I-gen-neg':
-                    tmp_entity += ' ' + x[i][k]
-                    k += 1
-                all_outputs['negative_genres'].append(tmp_entity)
-                if tmp_entity not in tmp_dict['negative_genres']:
-                    tmp_dict['negative_genres'].append(tmp_entity)
+                if name == 'bert_mult':
+                    if 'negative_genres' not in all_outputs.keys():
+                        all_outputs['negative_genres'] = []
+                    if 'negative_genres' not in tmp_dict.keys():
+                        tmp_dict['negative_genres'] = []
+                    tmp_entity = x[i][j]
+                    k = j + 1
+                    while predictions[i][k] == 'I-gen-neg':
+                        tmp_entity += ' ' + x[i][k]
+                        k += 1
+                    all_outputs['negative_genres'].append(tmp_entity)
+                    if tmp_entity not in tmp_dict['negative_genres']:
+                        tmp_dict['negative_genres'].append(tmp_entity)
 
         if i < len(sentences):
             all_outputs_per_sentence[sentences[i][0][0]] = tmp_dict
@@ -286,3 +294,31 @@ def do_matching(all_predictions, imdb_genres, movie_titles, alt_names):
             #        for movie_database in movie_titles.movie_title
 
     return imdb_predictions
+
+
+def ensemble_appr(roberta, bert_multilingual, elmo):
+    all_models = dict()
+    for submission in roberta.keys():
+        all_models[submission] = dict()
+        if 'positive_movies' in elmo[submission].keys():
+            all_models[submission]['positive_movies'] = elmo[submission]['positive_movies']
+        if 'negative_movies' in roberta[submission].keys():
+            all_models[submission]['negative_movies'] = roberta[submission]['negative_movies']
+        if 'positive_genres' in elmo[submission].keys():
+            all_models[submission]['positive_genres'] = elmo[submission]['positive_genres']
+        if 'negative_genres' in bert_multilingual[submission].keys():
+            all_models[submission]['negative_genres'] = bert_multilingual[submission]['negative_genres']
+        # if 'negative_genres' in bert_large[submission].keys():
+        #    all_models[submission]['negative_genres'] = bert_large[submission]['negative_genres']
+        if 'positive_keywords' in elmo[submission].keys():
+            all_models[submission]['positive_keywords'] = elmo[submission]['positive_keywords']
+        if 'negative_keywords' in roberta[submission].keys():
+            all_models[submission]['negative_keywords'] = roberta[submission]['negative_keywords']
+        # if 'negative_keywords' in bert_large[submission].keys():
+        #    all_models[submission]['negative_keywords'] = bert_large[submission]['negative_keywords']
+        if 'positive_actors' in bert_multilingual[submission].keys():
+            all_models[submission]['positive_actors'] = bert_multilingual[submission]['positive_actors']
+        if 'negative_actors' in roberta[submission].keys():
+            all_models[submission]['negative_actors'] = roberta[submission]['negative_actors']
+    return all_models
+
