@@ -3,7 +3,7 @@
 
 ## Project Overview
 
-![Scheme](https://github.com/[popkristina]/[NER_for_movies]/blob/[master]/data/figures/scheme.jpg?raw=true)
+![Alt text](relative%20data/figures/scheme.jpg?raw=true "Title")
 
 ## Usage
 
