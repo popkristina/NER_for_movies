@@ -79,12 +79,12 @@ def ElmoEmbedding(x):
 # INSERT TEXT(s) #########################################################################
 
 """texts_1 = pd.read_csv(
-    "data/different_formats/MovieSuggestions_submissions_pretty.txt", sep='\t', lineterminator='\n')
+    "data/inference_input/MovieSuggestions_submissions_pretty.txt", sep='\t', lineterminator='\n')
 texts_1['id'] = texts_1['link'].str.split("/")
 texts_1['id'] = texts_1['id'].apply(lambda x: x[4])
 texts_1 = texts_1[['id', 'title', 'selftext']] """
 
-texts_2 = pd.read_json("data/different_formats/submissions.json")
+texts_2 = pd.read_json("data/inference_input/submissions.json")
 texts_2 = texts_2[['id', 'title', 'selftext']]
 texts = texts_2[:20]  # Took only 20 to check faster
 
