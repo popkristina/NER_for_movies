@@ -23,7 +23,7 @@ tag_values = ['B-actor-pos', 'B-movie-neg', 'B-gen-neg', 'I-keyword-neg',
               'O', 'I-gen-neg', 'I-actor-pos', 'B-keyword-pos', 'I-actor-neg',
               'B-gen-pos', 'B-keyword-neg', 'B-actor-neg', 'I-movie-pos', 'I-gen-pos',
               'I-keyword-pos', 'B-movie-pos', 'I-movie-neg', 'PAD']
-with open("helper_dicts/i2tg.json") as idx2tag_save:
+with open("data/helper_dicts/i2tg.json") as idx2tag_save:
     idx2tag = json.load(idx2tag_save)
 
 

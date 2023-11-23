@@ -314,14 +314,14 @@ def save_as_json(dict, name):
     Accepts a word-to-index map in a dict format and
     a name for the map. Save it to json file.
     """
-    dict_save = open("./helper_dicts/" + name + ".json", "w")
+    dict_save = open("./data/helper_dicts/" + name + ".json", "w")
     json.dump(dict, dict_save)
     dict_save.close()
-    # word2idx_save = open("helper_dicts/w2idx.json", "w")  # save it for further use
+    # word2idx_save = open("data/helper_dicts/w2idx.json", "w")  # save it for further use
     # json.dump(word2idx, word2idx_save)
     # word2idx_save.close()
 
-    # tag2idx_save = open("helper_dicts/t2idx.json", "w")  # save it for further use
+    # tag2idx_save = open("data/dicts/t2idx.json", "w")  # save it for further use
     # json.dump(tag2idx, tag2idx_save)
     # tag2idx_save.close()
 

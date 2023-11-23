@@ -111,11 +111,11 @@ if new_dicts:
     save_as_json(idx2tag, "i2tg")
 
 else:
-    with open("helper_dicts/w2idx.json") as word2idx_save:
+    with open("data/helper_dicts/w2idx.json") as word2idx_save:
         word2idx = json.load(word2idx_save)
-    with open("helper_dicts/t2idx.json") as tag2idx_save:
+    with open("data/helper_dicts/t2idx.json") as tag2idx_save:
         tag2idx = json.load(tag2idx_save)
-    with open("helper_dicts/i2tg.json") as idx2tag_save:
+    with open("data/helper_dicts/i2tg.json") as idx2tag_save:
         idx2tag = json.load(idx2tag_save)
 
 
