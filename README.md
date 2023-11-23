@@ -3,7 +3,7 @@
 
 ## Project Overview
 
-![Alt text](relative%20data/figures/scheme.jpg?raw=true "Title")
+![Alt text](data/figures/scheme.jpg?raw=true "Title")
 
 ## Usage
 
