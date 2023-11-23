@@ -3,6 +3,14 @@
 
 ## Project Overview
 
+The project is intended to extract non-regular entities like movies, actors, genres 
+and keywords with respect to their sentiment from Reddit submissions in a subreddit
+for movie recommendations.
+
+Text format of the submissions: https://www.reddit.com/r/MovieSuggestions/
+
+
+
 ![Alt text](data/figures/scheme.jpg?raw=true "Title")
 
 ## Usage
