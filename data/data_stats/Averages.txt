@@ -1,9 +1,0 @@
-Average number of words:  50.07702702702703
-Average number of sentences:  2.397972972972973
-Average Flesch Reading Ease score:  75.15716216216194
-Average Flesch-Kincaid score:  8.416216216216197
-Average Automated readability index:  15.34222972972973
-Average number of movies per submission:  4.67972972972973
-Average number of actors per submission:  0.06959459459459459
-Average number of genres per submission:  0.47297297297297297
-Average number of keywords per submission:  4.125
