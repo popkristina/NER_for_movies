@@ -3,7 +3,7 @@
 
 ## Project Overview
 
-![Scheme](https://github.com/[popkristina]/[NER_for_movies]/tree/[master]/data/figures/scheme.jpg?raw=true)
+![Scheme](https://github.com/[popkristina]/[NER_for_movies]/blob/[master]/data/figures/scheme.jpg?raw=true)
 
 ## Usage
 
