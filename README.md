@@ -1,9 +1,14 @@
 
 # Aspect-Based Sentiment Analysis on Non-Traditional Entities
 
-## Project description
+## Project Description
+
 
 ## Usage
+
+1. For data preprocessing and model training, head to 'notebooks'.
+
+2. For inference, run 'pipeline.py'.
 
 ## Resources
 
