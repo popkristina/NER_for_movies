@@ -1,8 +1,9 @@
 
 # Aspect-Based Sentiment Analysis on Non-Traditional Entities
 
-## Project Description
+## Project Overview
 
+![Scheme](https://github.com/[popkristina]/[NER_for_movies]/tree/[master]/data/figures/scheme.jpg?raw=true)
 
 ## Usage
 
