@@ -168,10 +168,10 @@ all_predictions = recommender_format(ensemble_predictions)
 #    json.dump(all_predictions, outfile)
 
 # Read additional data
-imdb_genres = pd.read_csv("data/genres.csv", sep=';')  # IMDB genre list
-movie_titles = pd.read_csv("data/movie_titles.csv", sep=';', encoding='latin')
-movies_matched = pd.read_csv("data/movies_matched.csv")
-submissions = pd.read_csv("data/submissions.csv", sep=';')
+imdb_genres = pd.read_csv("data/original/genres.csv", sep=';')  # IMDB genre list
+movie_titles = pd.read_csv("data/original/movie_titles.csv", sep=';', encoding='latin')
+movies_matched = pd.read_csv("data/original/movies_matched.csv")
+submissions = pd.read_csv("data/original/submissions.csv", sep=';')
 submissions = submissions.fillna("")
 
 alt_names = create_alt_movie_dict(movies_matched)
