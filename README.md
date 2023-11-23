@@ -1,22 +1,20 @@
 
-## Links
+# Aspect-Based Sentiment Analysis on Non-Traditional Entities
 
-### Datasets and Repos
+## Project description
 
-3. Google BERT: https://github.com/google-research/bert
+## Usage
 
-7. BERT Google repo: https://github.com/google-research/bert/blob/master/multilingual.md
+## Resources
 
-11. Hugging Face BERT pre-trained models: https://huggingface.co/models?filter=tf
+- Google BERT: https://github.com/google-research/bert
 
+- BERT Google repo: https://github.com/google-research/bert/blob/master/multilingual.md
 
-### BERT & Transformers
+- Hugging Face BERT pre-trained models: https://huggingface.co/models?filter=tf
 
-3. BERT Fine-Tuning Tensorflow core: https://www.tensorflow.org/official_models/fine_tuning_bert
+- BERT Fine-Tuning Tensorflow core: https://www.tensorflow.org/official_models/fine_tuning_bert
 
-5. BERT fine tuning google colab: https://colab.research.google.com/drive/1ywsvwO6thOVOrfagjjfuxEf6xVRxbUNO
+- BERT fine tuning google colab: https://colab.research.google.com/drive/1ywsvwO6thOVOrfagjjfuxEf6xVRxbUNO
 
- 
-### Documentations
-
-5. ELMO: https://allennlp.org/elmo
+- ELMO: https://allennlp.org/elmo
