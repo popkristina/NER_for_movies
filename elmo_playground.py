@@ -1,3 +1,11 @@
+"""
+This is a standalone script for the intention
+of experimenting with various biLSTM architectures
+that include an ELMO layer wrapped in a Keras Lambda
+layer.
+
+"""
+
 # Imports
 import pandas as pd
 import numpy as np
