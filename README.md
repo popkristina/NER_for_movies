@@ -1,6 +1,8 @@
 
 # Aspect-Based Sentiment Analysis on Non-Traditional Entities
 
+-> Documentation under construction
+
 ## Project Overview
 
 The project is intended to extract non-regular entities like movies, actors, genres 
